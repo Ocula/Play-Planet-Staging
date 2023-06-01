@@ -1,0 +1,42 @@
+{
+  "name": "@quenty/cmdrservice",
+  "version": "7.6.0",
+  "description": "Bridge between cmdr and Nevermore services using servicebag",
+  "keywords": [
+    "Roblox",
+    "Nevermore",
+    "Lua",
+    "Cmdr"
+  ],
+  "bugs": {
+    "url": "https://github.com/Quenty/NevermoreEngine/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quenty/NevermoreEngine.git",
+    "directory": "src/cmdrservice/"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/quenty"
+  },
+  "license": "MIT",
+  "contributors": [
+    "Quenty"
+  ],
+  "dependencies": {
+    "@quenty/loader": "^6.0.1",
+    "@quenty/maid": "^2.4.0",
+    "@quenty/permissionprovider": "^8.5.0",
+    "@quenty/promise": "^6.0.1",
+    "@quenty/remoting": "^6.0.1",
+    "@quenty/servicebag": "^6.4.0",
+    "@quenty/string": "^3.0.0",
+    "@quenty/templateprovider": "^7.0.1",
+    "@quentystudios/cmdr": "^1.9.0-quenty.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "d9b0d10faa443cc42a6c2ac966f2f56d124bbde5"
+}

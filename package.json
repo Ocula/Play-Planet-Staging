@@ -1,0 +1,41 @@
+{
+  "name": "barnyard-scraps",
+  "version": "1.0.0",
+  "description": "Heavy backend system for creating [Barnyard Games](https://www.roblox.com/groups/11323634/Barnyard-Games#!/about)' next set of projects.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ocula/Template.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ocula/Template/issues"
+  },
+  "homepage": "https://github.com/Ocula/Template#readme",
+  "devDependencies": {
+    "nevermore": "^1.0.1"
+  },
+  "dependencies": {
+    "@quenty/acceltween": "^2.2.1",
+    "@quenty/adorneeutils": "^3.0.0",
+    "@quenty/binder": "^8.4.0",
+    "@quenty/camera": "^9.6.0",
+    "@quenty/camerastoryutils": "^6.0.1",
+    "@quenty/clienttranslator": "^8.7.0",
+    "@quenty/cmdrservice": "^7.7.0",
+    "@quenty/loader": "^6.0.1",
+    "@quenty/maid": "^2.4.0",
+    "@quenty/playerthumbnailutils": "^6.0.1",
+    "@quenty/qgui": "^2.1.0",
+    "@quenty/servicebag": "^6.4.0",
+    "cmdr": "0.0.2",
+    "i": "^0.3.7",
+    "npm": "^9.2.0",
+    "x": "^0.1.2"
+  }
+}

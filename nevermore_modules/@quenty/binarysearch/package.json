@@ -1,0 +1,66 @@
+{
+  "_args": [
+    [
+      "@quenty/binarysearch@2.1.1",
+      "/Users/kainoamiller/Desktop/Development/Games/Barnyard Games/barnyard-scraps"
+    ]
+  ],
+  "_from": "@quenty/binarysearch@2.1.1",
+  "_id": "@quenty/binarysearch@2.1.1",
+  "_inBundle": false,
+  "_integrity": "sha512-7p8mN3uh0lpID5Mv7vwpvw+Zmz+BfPQ4TbvPVL+jIB8+Q+doCFq2oagqmo6wx0vqe5fhaFTjKV+gG6/4DvuEQg==",
+  "_location": "/@quenty/binarysearch",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "@quenty/binarysearch@2.1.1",
+    "name": "@quenty/binarysearch",
+    "escapedName": "@quenty%2fbinarysearch",
+    "scope": "@quenty",
+    "rawSpec": "2.1.1",
+    "saveSpec": null,
+    "fetchSpec": "2.1.1"
+  },
+  "_requiredBy": [
+    "/@quenty/cubicspline"
+  ],
+  "_resolved": "https://registry.npmjs.org/@quenty/binarysearch/-/binarysearch-2.1.1.tgz",
+  "_spec": "2.1.1",
+  "_where": "/Users/kainoamiller/Desktop/Development/Games/Barnyard Games/barnyard-scraps",
+  "bugs": {
+    "url": "https://github.com/Quenty/NevermoreEngine/issues"
+  },
+  "contributors": [
+    {
+      "name": "AxisAngles"
+    },
+    {
+      "name": "Quenty"
+    }
+  ],
+  "description": "Binary search for Roblox",
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/quenty"
+  },
+  "gitHead": "340ac324c03fb3b844bbbe7ca57ee88874a724c9",
+  "homepage": "https://github.com/Quenty/NevermoreEngine#readme",
+  "keywords": [
+    "Roblox",
+    "Nevermore",
+    "Lua",
+    "binarysearch"
+  ],
+  "license": "MIT",
+  "name": "@quenty/binarysearch",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Quenty/NevermoreEngine.git",
+    "directory": "src/binarysearch/"
+  },
+  "version": "2.1.1"
+}

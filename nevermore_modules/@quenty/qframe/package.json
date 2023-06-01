@@ -1,0 +1,75 @@
+{
+  "_args": [
+    [
+      "@quenty/qframe@6.1.1",
+      "/Users/kainoamiller/Desktop/Development/Games/Barnyard Games/barnyard-scraps"
+    ]
+  ],
+  "_from": "@quenty/qframe@6.1.1",
+  "_id": "@quenty/qframe@6.1.1",
+  "_inBundle": false,
+  "_integrity": "sha512-df+lRPmVNPs3OZ43bIVKwoekldVuLK4gzzGm7FmBu22hHZrAmIJT8tJz33SD/EMHo+IgMkKzPcFNgdPErKYFEA==",
+  "_location": "/@quenty/qframe",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "@quenty/qframe@6.1.1",
+    "name": "@quenty/qframe",
+    "escapedName": "@quenty%2fqframe",
+    "scope": "@quenty",
+    "rawSpec": "6.1.1",
+    "saveSpec": null,
+    "fetchSpec": "6.1.1"
+  },
+  "_requiredBy": [
+    "/@quenty/camera"
+  ],
+  "_resolved": "https://registry.npmjs.org/@quenty/qframe/-/qframe-6.1.1.tgz",
+  "_spec": "6.1.1",
+  "_where": "/Users/kainoamiller/Desktop/Development/Games/Barnyard Games/barnyard-scraps",
+  "bugs": {
+    "url": "https://github.com/Quenty/NevermoreEngine/issues"
+  },
+  "contributors": [
+    {
+      "name": "Quenty"
+    },
+    {
+      "name": "AxisAngles"
+    }
+  ],
+  "dependencies": {
+    "@quenty/loader": "^6.0.1"
+  },
+  "description": "CFrame representation as a quaternion for Roblox",
+  "devDependencies": {
+    "@quenty/camerastoryutils": "^6.0.1",
+    "@quenty/cubicspline": "^6.0.1",
+    "@quenty/maid": "^2.4.0"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/quenty"
+  },
+  "gitHead": "8b9877c26a3fc753409a5114e56717837291279d",
+  "homepage": "https://github.com/Quenty/NevermoreEngine#readme",
+  "keywords": [
+    "Roblox",
+    "Nevermore",
+    "Lua",
+    "cframe",
+    "quaternions"
+  ],
+  "license": "MIT",
+  "name": "@quenty/qframe",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Quenty/NevermoreEngine.git",
+    "directory": "src/qframe/"
+  },
+  "version": "6.1.1"
+}

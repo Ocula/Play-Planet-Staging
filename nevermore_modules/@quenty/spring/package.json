@@ -1,0 +1,68 @@
+{
+  "_args": [
+    [
+      "@quenty/spring@6.0.1",
+      "/Users/kainoamiller/Desktop/Development/Games/Barnyard Games/barnyard-scraps"
+    ]
+  ],
+  "_from": "@quenty/spring@6.0.1",
+  "_id": "@quenty/spring@6.0.1",
+  "_inBundle": false,
+  "_integrity": "sha512-4rr1tnDbyiJIvIJp+yzabJP/QCiN6ObLEgT71HaJz41FvhAY+doNBX9i9M8IPZr6gC95rlvl1KIg3V/DvF7qag==",
+  "_location": "/@quenty/spring",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "@quenty/spring@6.0.1",
+    "name": "@quenty/spring",
+    "escapedName": "@quenty%2fspring",
+    "scope": "@quenty",
+    "rawSpec": "6.0.1",
+    "saveSpec": null,
+    "fetchSpec": "6.0.1"
+  },
+  "_requiredBy": [
+    "/@quenty/blend",
+    "/@quenty/camera"
+  ],
+  "_resolved": "https://registry.npmjs.org/@quenty/spring/-/spring-6.0.1.tgz",
+  "_spec": "6.0.1",
+  "_where": "/Users/kainoamiller/Desktop/Development/Games/Barnyard Games/barnyard-scraps",
+  "bugs": {
+    "url": "https://github.com/Quenty/NevermoreEngine/issues"
+  },
+  "contributors": [
+    {
+      "name": "Quenty"
+    }
+  ],
+  "dependencies": {
+    "@quenty/loader": "^6.0.1"
+  },
+  "description": "Spring implementation for Roblox",
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/quenty"
+  },
+  "gitHead": "8b9877c26a3fc753409a5114e56717837291279d",
+  "homepage": "https://github.com/Quenty/NevermoreEngine#readme",
+  "keywords": [
+    "Roblox",
+    "Nevermore",
+    "Lua",
+    "Spring",
+    "pid"
+  ],
+  "license": "MIT",
+  "name": "@quenty/spring",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Quenty/NevermoreEngine.git",
+    "directory": "src/spring/"
+  },
+  "version": "6.0.1"
+}

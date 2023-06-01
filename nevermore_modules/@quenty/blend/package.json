@@ -1,0 +1,49 @@
+{
+  "name": "@quenty/blend",
+  "version": "6.5.0",
+  "description": "Declarative UI system.",
+  "keywords": [
+    "Roblox",
+    "Nevermore",
+    "Lua"
+  ],
+  "bugs": {
+    "url": "https://github.com/Quenty/NevermoreEngine/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quenty/NevermoreEngine.git",
+    "directory": "src/blend/"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/quenty"
+  },
+  "license": "MIT",
+  "contributors": [
+    "Quenty"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@quenty/acceltween": "^2.2.1",
+    "@quenty/brio": "^8.2.0",
+    "@quenty/instanceutils": "^7.3.0",
+    "@quenty/loader": "^6.0.1",
+    "@quenty/maid": "^2.4.0",
+    "@quenty/promise": "^6.0.1",
+    "@quenty/rx": "^7.2.0",
+    "@quenty/signal": "^2.3.0",
+    "@quenty/spring": "^6.0.1",
+    "@quenty/steputils": "^3.2.0",
+    "@quenty/string": "^3.0.0",
+    "@quenty/valuebaseutils": "^7.3.0",
+    "@quenty/valueobject": "^7.2.0"
+  },
+  "devDependencies": {
+    "@quenty/contentproviderutils": "^6.0.1",
+    "@quenty/playerthumbnailutils": "^6.0.1"
+  },
+  "gitHead": "3040397f5f4601886ca7a1f664be7019b3941618"
+}

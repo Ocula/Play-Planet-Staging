@@ -1,0 +1,31 @@
+{
+  "name": "@quenty/adorneeutils",
+  "version": "3.0.0",
+  "description": "AdorneeUtils - Generic adornee functions to make attaching to objects in Roblox easier.",
+  "keywords": [
+    "Roblox",
+    "Nevermore",
+    "Lua",
+    "Adornee"
+  ],
+  "bugs": {
+    "url": "https://github.com/Quenty/NevermoreEngine/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quenty/NevermoreEngine.git",
+    "directory": "src/adorneeutils/"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/quenty"
+  },
+  "license": "MIT",
+  "contributors": [
+    "Quenty"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "9f7eaea7543c33c89d2e32c38491b13f9271f4f7"
+}

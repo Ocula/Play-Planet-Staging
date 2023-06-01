@@ -1,0 +1,34 @@
+{
+  "name": "@quenty/insertserviceutils",
+  "version": "6.0.1",
+  "description": "InsertServiceUtils to make loading models via insert service easy",
+  "keywords": [
+    "Roblox",
+    "Nevermore",
+    "Lua"
+  ],
+  "bugs": {
+    "url": "https://github.com/Quenty/NevermoreEngine/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quenty/NevermoreEngine.git",
+    "directory": "src/insertserviceutils/"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/quenty"
+  },
+  "license": "MIT",
+  "contributors": [
+    "Quenty"
+  ],
+  "dependencies": {
+    "@quenty/loader": "^6.0.1",
+    "@quenty/promise": "^6.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "8b9877c26a3fc753409a5114e56717837291279d"
+}

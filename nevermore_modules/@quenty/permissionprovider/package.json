@@ -1,0 +1,41 @@
+{
+  "name": "@quenty/permissionprovider",
+  "version": "8.5.0",
+  "description": "Permission provider for Roblox, including authenticating against group membership",
+  "keywords": [
+    "Roblox",
+    "Nevermore",
+    "Lua",
+    "permissions"
+  ],
+  "bugs": {
+    "url": "https://github.com/Quenty/NevermoreEngine/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quenty/NevermoreEngine.git",
+    "directory": "src/permissionprovider/"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://www.patreon.com/quenty"
+  },
+  "license": "MIT",
+  "contributors": [
+    "Quenty"
+  ],
+  "dependencies": {
+    "@quenty/baseobject": "^6.0.1",
+    "@quenty/grouputils": "^6.0.1",
+    "@quenty/loader": "^6.0.1",
+    "@quenty/maid": "^2.4.0",
+    "@quenty/promise": "^6.0.1",
+    "@quenty/remoting": "^6.0.1",
+    "@quenty/servicebag": "^6.4.0",
+    "@quenty/table": "^3.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "d9b0d10faa443cc42a6c2ac966f2f56d124bbde5"
+}
