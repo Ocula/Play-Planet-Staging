@@ -246,4 +246,4 @@ function Interface:KnitInit()
 	clientBegan = GameController:getClientBegan() -- Time that the game starts.
 end
 
-return ui
+return Interface

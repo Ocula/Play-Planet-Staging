@@ -1,13 +1,17 @@
+-- Camera Module
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local PatchCameraModule = ReplicatedStorage.Packages["patch-cameramodule"]
 local Signal = require(Knit.Library.Signal)
 
 local Camera = Knit.CreateController({
 	Name = "Camera",
 	States = {},
+
+	_internal = {},
 
 	ListenToGameCamera = Signal.new(),
 })
@@ -59,12 +63,34 @@ function Camera:SetState(state, ...)
 end
 
 function Camera:KnitStart()
+
+	warn("Camera Starting") 
+	
 	local CameraStackController = Knit.GetController("CameraStackController")
 	local GameService = Knit.GetService("GameService")
+
+	local Client = script.Parent:FindFirstAncestor("Client") 
+	local PlayerModule = Client.Parent:WaitForChild("PlayerModule") 
+	local CameraModule = PlayerModule:WaitForChild("CameraModule")
+
+	require(PatchCameraModule)(CameraModule) 
+
+	local playerModuleObject = require(PlayerModule) 
+	local cameraModuleObject = playerModuleObject:GetCameras()
+
+	-- Now expose this to our whole framework
+	self._internal.PlayerModule = playerModuleObject
+	self._internal.CameraModule = cameraModuleObject
+
+	print(playerModuleObject, cameraModuleObject) 
 
 	GameService.SetCameraState:Connect(function(...)
 		self:SetState(...)
 	end)
+
+
+
+	--
 
 	--[[ Test for Rebinding / Binding Camera Render. 
 	repeat

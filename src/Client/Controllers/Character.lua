@@ -5,8 +5,6 @@
 --
 -- Ocula @ Dec 3, 2022
 
--- This is redundant you idiot. You shouldn't be connecting these events via the Client. Do it via the Server.
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 

@@ -5,6 +5,7 @@ registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
 [dependencies]
+patch-cameramodule = "egomoose/patch-cameramodule@0.2.0"
 Knit = "sleitnick/knit@1.4.7"
 Comm = "sleitnick/comm@^0.3"
 Component = "sleitnick/component@^2"
