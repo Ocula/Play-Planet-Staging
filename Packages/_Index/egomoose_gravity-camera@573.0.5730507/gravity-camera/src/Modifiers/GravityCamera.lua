@@ -1,4 +1,4 @@
-local transitionRate: number = 0.15
+local transitionRate: number = 1
 
 local upCFrame: CFrame = CFrame.new()
 local upVector: Vector3 = upCFrame.YVector
