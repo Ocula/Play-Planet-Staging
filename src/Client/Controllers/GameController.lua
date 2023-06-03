@@ -4,6 +4,9 @@ local Signal = require(Knit.Library.Signal)
 
 local GameController = Knit.CreateController({
 	Name = "GameController",
+
+	State = "Lobby", 
+
 	__loaded = false,
 	__began = os.time(),
 

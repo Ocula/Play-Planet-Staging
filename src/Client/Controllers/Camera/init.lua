@@ -4,7 +4,7 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
-local PatchCameraModule = ReplicatedStorage.Packages["patch-cameramodule"]
+local PatchCameraModule = ReplicatedStorage.Packages:WaitForChild("patch-cameramodule") 
 local Signal = require(Knit.Library.Signal)
 
 local Camera = Knit.CreateController({
@@ -15,6 +15,10 @@ local Camera = Knit.CreateController({
 
 	ListenToGameCamera = Signal.new(),
 })
+
+function Camera:GetPlayerModuleObject()
+	return self._internal.PlayerModuleObject
+end
 
 -- Unprotected method. Use only after Start method.
 -- Set the State of the Camera.
@@ -64,31 +68,12 @@ end
 
 function Camera:KnitStart()
 
-	warn("Camera Starting") 
-	
 	local CameraStackController = Knit.GetController("CameraStackController")
 	local GameService = Knit.GetService("GameService")
-
-	local Client = script.Parent:FindFirstAncestor("Client") 
-	local PlayerModule = Client.Parent:WaitForChild("PlayerModule") 
-	local CameraModule = PlayerModule:WaitForChild("CameraModule")
-
-	require(PatchCameraModule)(CameraModule) 
-
-	local playerModuleObject = require(PlayerModule) 
-	local cameraModuleObject = playerModuleObject:GetCameras()
-
-	-- Now expose this to our whole framework
-	self._internal.PlayerModule = playerModuleObject
-	self._internal.CameraModule = cameraModuleObject
-
-	print(playerModuleObject, cameraModuleObject) 
 
 	GameService.SetCameraState:Connect(function(...)
 		self:SetState(...)
 	end)
-
-
 
 	--
 
@@ -106,6 +91,36 @@ function Camera:KnitStart()
 	until 2 == 3--]]
 end
 
-function Camera:KnitInit() end
+function Camera:KnitInit()
+	--[[warn("Camera Init") 
+
+	local Client = script.Parent:FindFirstAncestor("Client")
+	local PlayerModule = Client.Parent:FindFirstChild("PlayerModule") 
+	local CameraModule = PlayerModule:FindFirstChild("CameraModule")
+
+	warn("Camera Init 2", PlayerModule, CameraModule) 
+
+	require(PatchCameraModule)(CameraModule)
+
+	self._internal.PlayerModuleObject = PlayerModule
+	self._internal.CameraModuleObject = CameraModule 
+
+	warn("Camera Init 3") 
+
+	-- Run injections
+	for i,v in pairs(script.Inject:GetChildren()) do
+		warn("Injection:", i,v)
+		local _inject = require(v)
+	end
+
+	local playerModuleObject = require(PlayerModule) 
+	local cameraModuleObject = playerModuleObject:GetCameras()
+
+	warn("Camera Set", playerModuleObject, cameraModuleObject)
+
+	-- Now expose this to our whole framework
+	self._internal.PlayerModule = playerModuleObject
+	self._internal.CameraModule = cameraModuleObject--]]
+end
 
 return Camera

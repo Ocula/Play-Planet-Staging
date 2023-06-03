@@ -1,3 +1,10 @@
+-- Player Module Test
+local GravityPlayerModulePackage = require(game.ReplicatedStorage.Packages:FindFirstChild("gravity-camera"))
+
+GravityPlayerModulePackage.replace(
+    GravityPlayerModulePackage.getCopy(true)
+)
+-- 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Knit = require(ReplicatedStorage.Packages:WaitForChild("Knit"))

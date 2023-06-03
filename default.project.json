@@ -1,5 +1,5 @@
 {
-  "name": "barnyard-scraps",
+  "name": "play-planet",
   "globIgnorePaths": [ "**/.package-lock.json" , "*/.json" , "node_modules/.bin", "node_modules/i", "node_modules/nevermore", "node_modules/npm" ], 
   "tree": {
     "$className": "DataModel",
@@ -27,7 +27,15 @@
       "StarterPlayerScripts": {
         "Client": {
           "$path": "src/Client"
+        },
+
+        "PlayerScriptsLoader": {
+          "$path": "src/Internal/PlayerScriptsLoader"
         }
+      },
+
+      "StarterCharacterScripts": {
+        "$path": "src/Internal/StarterCharacterScripts"
       }
     },
 
