@@ -9,7 +9,7 @@ CameraClass.ClassName = "Camera"
 function CameraClass.new(controller)
 	local self = setmetatable({}, CameraClass)
 
-	local player = controller.Player
+	local player = game.Players.LocalPlayer
 	local playerModule = require(player.PlayerScripts:WaitForChild("PlayerModule"))
 
 	self.Controller = controller

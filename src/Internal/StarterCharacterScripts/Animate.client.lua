@@ -8,6 +8,7 @@ local humanoid = character:WaitForChild("Humanoid")
 
 local controller = CharacterAnimate.animate(script, humanoid)
 
+--[[
 script:WaitForChild("PlayEmote").OnInvoke = function(emote)
 	return controller.playEmote(emote)
-end
+end--]]

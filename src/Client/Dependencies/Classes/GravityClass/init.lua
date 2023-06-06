@@ -139,7 +139,7 @@ local function onGravityStep(self, dt)
 
 	-- get world move vector
 	local fDot = camCF.ZVector:Dot(newGravity)
-	local cForward = math.abs(fDot) > 0.5 and math.sign(fDot)*camCF.YVector or -camCF.ZVector
+	local cForward = math.abs(fDot) > 0.5 and math.sign(fDot) * camCF.YVector or -camCF.ZVector
 	
 	local left = -cForward:Cross(newGravity).Unit
 	local forward = -left:Cross(newGravity).Unit
@@ -164,7 +164,7 @@ local function onGravityStep(self, dt)
 	local newCharCF = CFrame.fromMatrix(ZERO3, charRight, newGravity, -charForward)
 
 	if self._camera.CameraModule:IsCamRelative() then
-		newCharCF = CFrame.fromMatrix(ZERO3, -left, newGravity)
+		newCharCF = CFrame.fromMatrix(ZERO3, charRight, newGravity, -charForward)
 	elseif isInputMoving then
 		newCharRotation = newCharRotation:Lerp(getRotationBetween(
 			charForward,
@@ -228,7 +228,7 @@ function init(self)
 		onHeartbeat(self, dt)
 	end))
 
-	RunService:BindToRenderStep("GravityStep", Enum.RenderPriority.Camera.Value - 1, function(dt)
+	RunService:BindToRenderStep("GravityStep", Enum.RenderPriority.Character.Value - 1, function(dt)
 		onGravityStep(self, dt)
 	end)
 
@@ -256,7 +256,9 @@ function GravityControllerClass:GetGravityUp(oldGravity)
 end
 
 function GravityControllerClass:Destroy()
+	warn("Cleaning") 
 	RunService:UnbindFromRenderStep("GravityStep")
+	self._camera.CameraModule:Reset() 
 	self.Maid:Sweep()
 	self.Humanoid.PlatformStand = false
 end

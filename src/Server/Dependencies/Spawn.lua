@@ -19,7 +19,7 @@ function Spawn.new(_obj)
 	local self = setmetatable({}, Spawn)
 
 	if not _obj:FindFirstAncestor("Workspace") then
-		warn("Not a member of workspace.")
+		--warn("Not a member of workspace.")
 		return { _ShellClass = true, Destroy = function() end, Create = function() end }
 	end
 

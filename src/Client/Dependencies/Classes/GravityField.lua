@@ -30,7 +30,15 @@ function GravityField.new(Object) -- The part that is acting as the Gravity Fiel
 		Radius		= (Object.Size.X + Object.Size.Y + Object.Size.Z)/2;
 		GrabRadius  = 1.5; 
 		Priority 	= 0; 
+
+		Node_Map 	= Object:FindFirstChild("Node_Map"), 
 	}, GravityField) 
+
+	local nMap = Object:FindFirstChild("Node_Map")
+	
+	if nMap then 
+		self.Node_Map = nMap.Holder:GetChildren() 
+	end 
 
 	local _attributes = Object:GetAttributes()
 
@@ -68,7 +76,7 @@ function GravityField.new(Object) -- The part that is acting as the Gravity Fiel
 		local _timeOut = 0 
 
 		repeat
-			wait(1/30)
+			task.wait(1/30)
 			_zone = _checkZone() 
 
 			_timeOut += 1 
@@ -94,6 +102,8 @@ function GravityField.new(Object) -- The part that is acting as the Gravity Fiel
 	self.GetRayDirection = function(_origin) 
 		return (Object.Position - _origin).Unit
 	end 
+
+	warn("New field:", self)
 
 	return self 
 end

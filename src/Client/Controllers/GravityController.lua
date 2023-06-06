@@ -41,6 +41,8 @@ local Binder = require(Shared:WaitForChild("Binder"))
 
 local GravityClass = require(Knit.Modules.Classes.GravityClass)
 
+local LastResult = nil 
+
 local GravityController = Knit.CreateController { 
     Name = "GravityController",
     State = "Normal",
@@ -64,6 +66,15 @@ local GravityController = Knit.CreateController {
 }
 
 -- Private Methods
+
+function GravityController:SetCamera()
+	local playerModule = require(game.Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"))
+	self.Camera = playerModule:GetCameras() 
+end 
+
+function GravityController:GetCamera()
+	return self.Camera 
+end 
 
 function GravityController:_checkNormals(a, b)
 	local angle = (math.acos(a:Dot(b)/(a.Magnitude * b.Magnitude))) --* sn
@@ -221,11 +232,43 @@ function GravityController:Raycast(FilterType, Descendants, Origin, Direction)
 	return workspace:Raycast(Origin, Direction, raycastParam) 
 end 
 
+function GravityController:GetNearestNodeUpVector(node_map, origin)
+	local closestNode, closestMax = nil, math.huge 
+	for i,v in pairs(node_map) do
+		local mag = (v.WorldCFrame.p - origin.p).Magnitude
+		if mag < closestMax then 
+			closestMax = mag 
+			closestNode = v 
+		end 
+	end 
+
+	return closestNode.UpVector.Value
+end 
+
 function GravityController.GetGravityUp(self, oldGravityUp)
 	local hrpCF = self.HRP.CFrame
 	local Field = GravityController.Field
+	local Camera = GravityController:GetCamera() 
 
 	if Field then
+		--[[local _result = - GravityController:GetNearestNodeUpVector(Field.Node_Map, hrpCF) or Vector3.new(0,1,0) 	
+
+		if LastResult then 
+			if _result ~= LastResult then 
+				Camera:SetTargetUpVector(_result)
+				
+				LastResult = _result 
+
+				return _result 
+			else 
+				return LastResult 
+			end
+		else 
+			Camera:SetTargetUpVector(_result)
+			LastResult = _result 
+			return _result 
+		end--]]
+
 		local _direction = Field.GetRayDirection(hrpCF.p) * 10000
 		local _hrpP      = hrpCF.p 
 		local _hitList   = Field.HitList or {}
@@ -233,12 +276,19 @@ function GravityController.GetGravityUp(self, oldGravityUp)
 		table.insert(_hitList, Field.Object)
 
 		local _normalRay = GravityController:Raycast(Enum.RaycastFilterType.Whitelist, _hitList, _hrpP, _direction) 
-		
+		local _result
+
 		if _normalRay then
-			return _normalRay.Normal 
+			_result = _normalRay.Normal 
 		else 
-			return oldGravityUp
+			_result = oldGravityUp
 		end
+
+		--warn("Setting Camera", _result)
+		local Camera = GravityController:GetCamera() 
+		Camera:SetTargetUpVector(_result) 
+
+		return _result
 	else
 		return oldGravityUp
 	end
@@ -260,7 +310,7 @@ function GravityController:FieldCheck()
 
 	if _humRoot then -- Only continue if our character exists. 
 		if self.State == "GravityField" then -- First check our State, if we need a GravityField, then we check the nearest field
-			local _nearestField = self:_getNearestField() -- Each GravityField can have a GravityZone 
+			local _nearestField = self:_getNearestField() -- Get nearest field. 
 
 			if self.Field and not _nearestField then 
 				_nearestField = self.Field 
@@ -268,7 +318,7 @@ function GravityController:FieldCheck()
 
 			if not self.Field then -- No active field. So we need to set it to this nearest field.
 				self.Field = _nearestField 
-				--warn("Field set:", GravityController.Field)
+				warn("Field set:", GravityController.Field)
 			else
 				if _nearestField ~= self.Field.Zone then 
 					--warn("Nearest Field:", _nearestField)
@@ -314,7 +364,11 @@ function GravityController:KnitStart()
 
 	GravityFieldBinder:Start() 
 
-    self:SetState("GravityField")
+	task.delay(2, function()
+    	self:SetState("GravityField")
+	end)--]] 
+
+	self:SetCamera() 
 end
 
 function GravityController:KnitInit()
@@ -329,6 +383,12 @@ function GravityController:KnitInit()
 		Player.CharacterRemoving:Connect(function()
 			if (self.State == "GravityField") then 
 			--	self:SetState("Normal") 
+			end 
+		end)
+
+		Player.CharacterAdded:Connect(function()
+			if (self.State ~= "Normal") then 
+				self:SetState(self.State) 
 			end 
 		end)
 	end)

@@ -1,4 +1,8 @@
-local transitionRate: number = 1
+-- GravityCamera.lua @EgoMoose 
+
+-- 
+
+local transitionRate: number = 0.15
 
 local upCFrame: CFrame = CFrame.new()
 local upVector: Vector3 = upCFrame.YVector
@@ -10,18 +14,18 @@ local prevSpinPart: BasePart = spinPart
 local prevSpinCFrame: CFrame = spinPart.CFrame
 
 --
+local function checkVectorNaN(v3)
+    if v3.X ~= v3.X or v3.Y ~= v3.Y or v3.Z ~= v3.Z then 
+        return true 
+    end 
 
-local function getRotationBetween(u, v, axis)
-    local dot = u:Dot(v)
-    local uxv = u:Cross(v)
+    return false 
+end 
 
-    local tolerance = 0.00001 -- Tolerance threshold for comparing dot product
-
-    if dot < -1 - tolerance then
-        return CFrame.fromAxisAngle(axis, math.pi)
-    end
-
-    return CFrame.new(0, 0, 0, uxv.x, uxv.y, uxv.z, 1 + dot)
+local function getRotationBetween(u: Vector3, v: Vector3, axis: Vector3): CFrame
+	local dot, uxv = u:Dot(v), u:Cross(v)
+	if dot < -0.99999 then return CFrame.fromAxisAngle(axis, math.pi) end
+	return CFrame.new(0, 0, 0, uxv.x, uxv.y, uxv.z, 1 + dot)
 end
 
 local function calculateUpStep(_dt: number)
@@ -91,17 +95,74 @@ return function(PlayerModule)
 
 	------------
 	local baseCamera = require(PlayerModule.CameraModule.BaseCamera)
+    local basePitchYaw = Vector2.new(math.pi/2,math.rad(90))
+
+    local EPSILON = 1e-6 
 
 	local max_y = math.rad(80)
 	local min_y = math.rad(-80)
 
+    local asinLimit = math.asin(1) 
+
+    function baseCamera:Reset()
+        self._pitchYaw = basePitchYaw 
+    end 
+
+    function baseCamera:GetCameraLookVector() 
+        if not self._pitchYaw then 
+            self._pitchYaw = basePitchYaw 
+        end 
+
+        local pitch, yaw = self._pitchYaw.X, self._pitchYaw.Y 
+        local yTheta, zTheta = math.rad(yaw), math.rad(pitch) 
+
+        local lookVector = CFrame.Angles(0,yTheta,0) * CFrame.Angles(zTheta, 0, 0) * upCFrame.YVector
+
+        return lookVector 
+    end
+
+    function baseCamera:UpdatePitchYaw(rotateInput: Vector2)
+        local updatedPY = self._pitchYaw + rotateInput 
+
+        local newPY = Vector2.new(math.clamp(updatedPY.X, -((math.pi*2) - EPSILON) , 
+                    ((math.pi*2) + EPSILON)), math.clamp(updatedPY.Y, 0.2, math.rad(180)-EPSILON))
+
+        if math.abs(newPY.X) < EPSILON then
+            newPY = Vector2.new(newPY.X + EPSILON, newPY.Y) 
+        end
+
+        if math.abs(newPY.Y) < EPSILON then
+            newPY = Vector2.new(newPY.X, newPY.Y + EPSILON) 
+        end
+
+        if math.abs(newPY.X) >= math.pi*2 - EPSILON then 
+			newPY = Vector2.new(0,newPY.Y)
+		end 
+		
+		if math.abs(newPY.Y) > (max_y * 2) then 
+			newPY = Vector2.new(newPY.X,newPY.Y) 
+		end
+
+        self._pitchYaw = newPY 
+
+        return self._pitchYaw 
+    end 
+
 	function baseCamera:CalculateNewLookCFrameFromArg(suppliedLookVector: Vector3?, rotateInput: Vector2): CFrame
+        local pitchYaw = self:UpdatePitchYaw(rotateInput)
+
 		local currLookVector: Vector3 = suppliedLookVector or self:GetCameraLookVector()
+
 		currLookVector = upCFrame:VectorToObjectSpace(currLookVector)
 
 		local currPitchAngle = math.asin(currLookVector.Y)
-		local yTheta = math.clamp(rotateInput.Y, -max_y + currPitchAngle, -min_y + currPitchAngle)
-		local constrainedRotateInput = Vector2.new(rotateInput.X, yTheta)
+
+        if currPitchAngle ~= currPitchAngle then -- NaN protection
+            currPitchAngle = asinLimit * currLookVector.Y 
+        end 
+
+		local yTheta = math.clamp(pitchYaw.Y, -max_y + currPitchAngle, -min_y + currPitchAngle)
+		local constrainedRotateInput = Vector2.new(pitchYaw.X, yTheta)
 		local startCFrame = CFrame.new(Vector3.zero, currLookVector)
 		local newLookCFrame = CFrame.Angles(0, -constrainedRotateInput.X, 0) * startCFrame * CFrame.Angles(-constrainedRotateInput.Y,0,0)
 
@@ -147,6 +208,39 @@ return function(PlayerModule)
 
 	function cameraObject:GetTransitionRate(): number
 		return transitionRate
+	end
+
+    function cameraObject:IsFirstPerson()
+		if self.activeCameraController then
+			return self.activeCameraController.inFirstPerson
+		end
+		return false
+	end
+	
+	function cameraObject:IsMouseLocked()
+		if self.activeCameraController then
+			return self.activeCameraController:GetIsMouseLocked()
+		end
+		return false
+	end
+	
+	function cameraObject:IsToggleMode()
+		if self.activeCameraController then
+			return self.activeCameraController.isCameraToggle
+		end
+		return false
+	end
+    
+	function cameraObject:IsCamRelative()
+		return self:IsMouseLocked() or self:IsFirstPerson()
+	end
+
+	function cameraObject:Reset()
+		targetUpVector = Vector3.new(0,1,0)
+
+		if self.activeCameraController then 
+			self.activeCameraController:Reset()
+		end 
 	end
 
 	function cameraObject:Update(dt: number)

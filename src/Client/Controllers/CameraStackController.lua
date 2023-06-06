@@ -41,14 +41,14 @@ local Signal = require(Knit.Library.Signal)
 function CameraStackController:KnitStart()
 	self._started = true
 
-	self.Bind:Fire(self._doNotUseDefaultCamera)
+	--self.Bind:Fire(self._doNotUseDefaultCamera)
 end
 
 --[=[
 	Initializes a new camera stack. Have to Initialize it manually. 
 ]=]
 function CameraStackController:KnitInit()
-	self._maid = Maid.new()
+--[[	self._maid = Maid.new()
 	self._key = HttpService:GenerateGUID(false)
 
 	self._cameraStack = CameraStack.new()
@@ -124,9 +124,9 @@ function CameraStackController:KnitInit()
 		end
 	)
 
-	self._maid:GiveTask(function()
+	--[[self._maid:GiveTask(function()
 		RunService:UnbindFromRenderStep("CameraStackUpdateInternal" .. self._key)
-	end)
+	end)--]]
 end
 
 --[=[

@@ -63,6 +63,7 @@ function DefaultCamera:BindToRenderStep()
 	end
 
 	RunService:BindToRenderStep("DefaultCamera_Preupdate" .. self._key, Enum.RenderPriority.Camera.Value - 2, function()
+		print("working1") 
 		self._cameraState:Set(Workspace.CurrentCamera)
 	end)
 
@@ -70,6 +71,7 @@ function DefaultCamera:BindToRenderStep()
 		"DefaultCamera_PostUpdate" .. self._key,
 		Enum.RenderPriority.Camera.Value + 2,
 		function()
+			print("working2") 
 			self._cameraState = CameraState.new(Workspace.CurrentCamera)
 		end
 	)

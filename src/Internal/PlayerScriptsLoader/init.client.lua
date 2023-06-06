@@ -1,10 +1,12 @@
+-- TECHNICALLY NOT NECESSARY BUT I'LL LEAVE IT FOR NOW
+
 local PlayerModule = script.Parent:WaitForChild("PlayerModule")
 
 local playerModuleObject = require(PlayerModule)
 local cameraModuleObject = playerModuleObject:GetCameras()
 
--- Apply modifiers
-
+--cameraModuleObject:SetTargetUpVector(Vector3.new(-0.5,1,0))
+--[[
 game:GetService("RunService").Heartbeat:Connect(function(_dt)
 	local character = game.Players.LocalPlayer.Character
 	local hrp = character and character:FindFirstChild("HumanoidRootPart")
@@ -21,4 +23,4 @@ game:GetService("RunService").Heartbeat:Connect(function(_dt)
 			cameraModuleObject:SetTargetUpVector(result.Normal)
 		end
 	end
-end)
+end)--]]

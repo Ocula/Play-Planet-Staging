@@ -174,7 +174,7 @@ function ClassicCamera:Update()
 
 					-- Check for NaNs
 					if Util.IsFinite(y) and math.abs(y) > 0.0001 and math.abs(y) > thetaCutoff * timeDelta then
-						rotateInput = rotateInput + Vector2.new(y, 0)
+						rotateInput = rotateInput --+ Vector2.new(y, 0)
 					end
 				end
 			end
@@ -214,7 +214,7 @@ function ClassicCamera:Update()
 				newCameraCFrame = CFrame.new(cameraFocusP - (zoom * newLookVector), cameraFocusP)
 			end
 		else -- is FollowCamera
-			local newLookVector = self:CalculateNewLookVectorFromArg(overrideCameraLookVector, rotateInput)
+			local newLookVector = self:CalculateNewLookVectorFromArg(nil, rotateInput)
 
 			if VRService.VREnabled then
 				newCameraFocus = self:GetVRFocus(subjectPosition, timeDelta)

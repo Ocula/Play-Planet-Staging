@@ -133,6 +133,7 @@ function CameraModule.new()
 	self:ActivateCameraController(self:GetCameraControlChoice())
 	self:ActivateOcclusionModule(Players.LocalPlayer.DevCameraOcclusionMode)
 	self:OnCurrentCameraChanged() -- Does initializations and makes first camera controller
+	
 	RunService:BindToRenderStep("cameraRenderUpdate", Enum.RenderPriority.Camera.Value, function(dt) self:Update(dt) end)
 
 	-- Connect listeners to camera-related properties

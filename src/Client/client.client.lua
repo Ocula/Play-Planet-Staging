@@ -24,23 +24,6 @@ Utility:IndexModules(Packages, Knit.Library)
 -- Load Dependency Modules (Class Modules/Utility Modules for the Server @dependencies)
 Utility:IndexModules(Dependencies, Knit.Modules)
 
--- Camera Injection
---[[local Client = script.Parent
-local PlayerModule = Client.Parent:FindFirstChild("PlayerModule") 
-local CameraModule = PlayerModule:FindFirstChild("CameraModule")
-
-local PatchCameraModule = require(PatchCameraModule)(CameraModule)
-
--- Run injections
-for i,v in pairs(Client.Controllers.Camera.Inject:GetChildren()) do
-    local _inject = require(v)
-end
-
-local playerModuleObject = require(PlayerModule) 
-local cameraModuleObject = playerModuleObject:GetCameras()
-
-warn("Injected:", cameraModuleObject)--]]
-
 -- Add Controllers
 Knit.AddControllers(Controllers)
 
