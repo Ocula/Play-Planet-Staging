@@ -49,6 +49,13 @@ function SpawnService:LobbySpawn(_player)
 	local _spawns = self.getLobbySpawns()
 	local _spawn = _spawns[math.random(1, #_spawns)]
 
+	local state = _spawn:GetAttribute("SetState") 
+
+	if state then -- This spawn is in a different Gravity place. 
+		local GravityService = Knit.GetService("GravityService") 
+		GravityService.Client.SetState:Fire(_player, state) 
+	end
+
 	Utility:TeleportPlayer(_player, _spawn.CFrame, 0)
 end
 

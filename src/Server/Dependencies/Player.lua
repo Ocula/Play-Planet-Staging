@@ -34,8 +34,11 @@ Player.__index = Player
 
 	test.Hello = 1
 
-	local _test = test[
+	local _test = test.Hello
 	print(_test)
+
+	test.Hello = 2 
+	print(_test) 
 
 ]]
 
@@ -48,13 +51,24 @@ function Player.new(_player, _profile)
 	local RoundService = Knit.GetService("RoundService")
 
 	local self = setmetatable({
+		-- Player 
 		Player = _player,
+
+		-- Lobby 
 		Lobby = false,
+
+		-- Player Properties 
 		Image = Players:GetUserThumbnailAsync(
 			_player.UserId,
 			Enum.ThumbnailType.AvatarBust,
 			Enum.ThumbnailSize.Size180x180
 		),
+
+		-- Gravity 
+		ActiveField = false,
+		Field = "", 
+
+		-- Game Properties
 		Game = {
 			DamageTaken = 0, -- per match
 			DamageGiven = 0, -- per match
@@ -63,11 +77,14 @@ function Player.new(_player, _profile)
 			_totalDamageGiven = _profile.TotalDamageGiven,
 		},
 
+		-- Dummy Humanoid for Caching Values
 		Humanoid = {},
 
+		-- Signals
 		PropertyChangedSignal = Signal.new(),
 		Leaving = Signal.new(),
 
+		-- Private Variables
 		_disableEvents = false,
 		_sessionId = "",
 		_maid = Maid.new(),
@@ -135,6 +152,38 @@ function Player:SetJumpHeight(num)
 		end
 	end
 end
+
+function Player:SetField(Field)
+	if self.Field ~= Field.GUID then
+		self.Field = Field.GUID
+
+		warn("Set", self.Player, "Field:", self.Field) 
+
+		local GravityService = Knit.GetService("GravityService") 	
+		local packagedField = Field:Package() -- Send this whenever we first set a new field.
+		
+		GravityService.Client.SetField:Fire(self.Player, packagedField) 
+	end
+	-- Send to client. 
+end
+
+function Player:GetPosition()
+	local hrp = self:GetHumanoidRootPart() 
+	if hrp then 
+		return hrp.Position 
+	end 
+end
+
+function Player:GetHumanoidRootPart()
+	local character = self.Player.Character 
+	if character then 
+		local hrp = character:FindFirstChild("HumanoidRootPart") 
+
+		if hrp then 
+			return hrp 
+		end 
+	end 
+end 
 
 function Player:SetCameraState(...)
 	local GameService = Knit.GetService("GameService")

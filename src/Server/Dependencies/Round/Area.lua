@@ -7,7 +7,7 @@ local RunService = game:GetService("RunService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 -- Dependencies
-local Region = require(Knit.Library.Region3)
+local OverlapCheck = require(Knit.Library.OverlapCheck) 
 
 local Area = {}
 Area.__index = Area
@@ -32,7 +32,9 @@ function Area.new(part)
 	self._countdown = self.Countdown
 
 	-- Create Region
-	self._region = Region.FromPart(part)
+	self._region = OverlapCheck.new(part)
+
+	self._maid:GiveTask(self._region) 
 
 	return self
 end
@@ -168,8 +170,8 @@ function Area:Check(player)
 		if character then
 			local hrp = character:FindFirstChild("HumanoidRootPart")
 			if hrp then
-				local region = self:GetRegion()
-				local isPlayerIn = region:CastPoint(hrp.Position)
+				local overlap = self:GetRegion()
+				local isPlayerIn = overlap:Check(hrp) 
 
 				if self:CanAdd() then
 					if isPlayerIn then

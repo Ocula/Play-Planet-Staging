@@ -11,7 +11,6 @@ local RunService = game:GetService("RunService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 -- Dependencies
-local Region3 = require(Knit.Library.Region3)
 local Binder = require(Knit.Library.Binder)
 local Area = require(Knit.Modules.Round.Area)
 local Maid = require(Knit.Library.Maid)

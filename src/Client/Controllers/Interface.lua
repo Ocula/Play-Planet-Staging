@@ -135,7 +135,7 @@ end
 
 function Interface:KnitStart()
 	-- Test Fusion
-	--self:Load() -- Add to self:Load()
+	self:Load() -- Add to self:Load()
 	local Transitions = Handler:Get("Transitions") -- This inits the Transition folder.
 
 	-- Triangle test

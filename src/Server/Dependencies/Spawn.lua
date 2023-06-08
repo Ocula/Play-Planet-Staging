@@ -16,15 +16,12 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Utility = require(Knit.Library.Utility)
 
 function Spawn.new(_obj)
-	local self = setmetatable({}, Spawn)
-
 	if not _obj:FindFirstAncestor("Workspace") then
 		--warn("Not a member of workspace.")
 		return { _ShellClass = true, Destroy = function() end, Create = function() end }
 	end
 
 	local _data = _obj:GetAttributes()
-	local _type = _data.Type
 
 	-- Create new table based on data.
 
@@ -38,11 +35,7 @@ function Spawn.new(_obj)
 
 	_newData.Object = _obj
 
-	for i, v in pairs(_newData) do
-		self[i] = v
-	end
-
-	return self
+	return setmetatable(_newData, Spawn)
 end
 
 function Spawn:Create()
@@ -77,6 +70,13 @@ function Spawn:Teleport(_player, _radius)
 	self._busy = true
 
 	Utility:TeleportPlayer(_player.Player, self.Object.CFrame, _radius)
+
+	-- Hold player here for a second to double check SetState
+
+	if self.SetState then -- This spawn is in a different Gravity place. 
+		local GravityService = Knit.GetService("GravityService") 
+		GravityService.Client.SetState:Fire(_player, self.SetState) 
+	end
 
 	if self.HoldPlayer then
 		local duration = self.Forcefield or self.HoldDuration

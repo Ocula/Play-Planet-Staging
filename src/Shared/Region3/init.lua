@@ -33,7 +33,7 @@ Constructors:
 Methods:
 	RotatedRegion3:CastPoint(Vector3 point)
 		> returns true or false if the point is within the RotatedRegion3 object
-	RotatedRegion3:CastPonts(Array Vector3 points, inverse bool)
+	RotatedRegion3:CastPoints(Array Vector3 points, inverse bool)
 		> returns an array of Vector3 points that are within the RotatedRegion3 object 
 		> inverse will return points that are outside of the RotatedRegion3 object
 	RotatedRegion3:CastPart(BasePart part)
@@ -113,13 +113,18 @@ end
 -- Public Constructors
 
 function RotatedRegion3.new(cframe, size)
+	if 1 == 1 then 
+		warn("RotatedRegion3 is deprecated.")
+		return 
+	end 
+
 	local self = setmetatable({}, RotatedRegion3)
 	
 	self.CFrame = cframe
 	self.Size = size
 	self.Shape = "Block"
 	
-	self.Set = Vertices.Block(cframe, size/2)
+	self.Set = Vertices.Block(cframe, size/2) -- List of CFrames -- Upd
 	self.Support = Supports.PointCloud
 	self.Centroid = cframe.p
 	
@@ -131,6 +136,11 @@ end
 RotatedRegion3.Block = RotatedRegion3.new
 
 function RotatedRegion3.Wedge(cframe, size)
+	if 1 == 1 then 
+		warn("RotatedRegion3 is deprecated.")
+		return 
+	end 
+
 	local self = setmetatable({}, RotatedRegion3)
 
 	self.CFrame = cframe
@@ -147,6 +157,11 @@ function RotatedRegion3.Wedge(cframe, size)
 end
 
 function RotatedRegion3.CornerWedge(cframe, size)
+	if 1 == 1 then 
+		warn("RotatedRegion3 is deprecated.")
+		return 
+	end 
+	
 	local self = setmetatable({}, RotatedRegion3)
 
 	self.CFrame = cframe
@@ -163,6 +178,11 @@ function RotatedRegion3.CornerWedge(cframe, size)
 end
 
 function RotatedRegion3.Cylinder(cframe, size)
+	if 1 == 1 then 
+		warn("RotatedRegion3 is deprecated.")
+		return 
+	end 
+	
 	local self = setmetatable({}, RotatedRegion3)
 
 	self.CFrame = cframe
@@ -179,6 +199,11 @@ function RotatedRegion3.Cylinder(cframe, size)
 end
 
 function RotatedRegion3.Ball(cframe, size)
+	if 1 == 1 then 
+		warn("RotatedRegion3 is deprecated.")
+		return 
+	end 
+	
 	local self = setmetatable({}, RotatedRegion3)
 
 	self.CFrame = cframe
@@ -195,17 +220,32 @@ function RotatedRegion3.Ball(cframe, size)
 end
 
 function RotatedRegion3.FromPart(part)
+	if 1 == 1 then 
+		warn("RotatedRegion3 is deprecated.")
+		return 
+	end 
+	
 	return RotatedRegion3[Vertices.Classify(part)](part.CFrame, part.Size)
 end
 
 -- Public Constructors
 
 function RotatedRegion3:CastPoint(point)
+	if 1 == 1 then 
+		warn("RotatedRegion3 is deprecated.")
+		return 
+	end 
+	
 	local gjk = GJK.new(self.Set, {point}, self.Centroid, point, self.Support, Supports.PointCloud)
 	return gjk:IsColliding()
 end
 
 function RotatedRegion3:CastNodes(nodeArray, inverse)
+	if 1 == 1 then 
+		warn("RotatedRegion3 is deprecated.")
+		return 
+	end 
+	
 	if (not nodeArray) then return end 
 		
 	local _points = {} 
@@ -225,6 +265,30 @@ function RotatedRegion3:CastNodes(nodeArray, inverse)
 	end 
 
 	return _points 
+end
+
+function RotatedRegion3:updateCenter(newCFrame) -- @ocula's Attempt to move Rotated R3s 
+	if 1 == 1 then 
+		warn("RotatedRegion3 is deprecated.")
+		return 
+	end 
+	
+	local last = self.CFrame
+	local relativeChange = last:ToObjectSpace(newCFrame) 
+
+	self.CFrame = newCFrame
+
+	for i,v in pairs(self.Set) do 
+		self.Set[i] = v + relativeChange.p -- this should work 
+	end
+
+	if self.Shape == "Block" or self.Shape == "Cylinder" or self.Shape == "Ball" then 
+		self.Centroid = newCFrame.p
+	else 
+		self.Centroid = Vertices.GetCentroid(self.Set) 
+	end
+
+	self.AlignedRegion3 = Region3.new(worldBoundingBox(self.Set))
 end
 
 function RotatedRegion3:CastClasses(classArray, inverse)
@@ -268,6 +332,7 @@ end
 function RotatedRegion3:CastPart(part)
 	local r3 = RotatedRegion3.FromPart(part)
 	local gjk = GJK.new(self.Set, r3.Set, self.Centroid, r3.Centroid, self.Support, r3.Support)
+
 	return gjk:IsColliding()
 end
 

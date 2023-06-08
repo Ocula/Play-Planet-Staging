@@ -119,18 +119,13 @@ local function onHeartbeat(self, dt)
 end
 
 local function onGravityStep(self, dt)
-	_counter += 1 
-
-	if _counter >= 10 then 
-		_counter = 0 
-		GravityClient:FieldCheck() 
-	end 
-
 	local camCF = workspace.CurrentCamera.CFrame
 
 	-- update the gravity vector
 	local oldGravity = self._gravityUp
 	local newGravity = self:GetGravityUp(oldGravity)
+
+	if not oldGravity or not newGravity then return end -- packet loss
 
 	local sphericalArc = getRotationBetween(oldGravity, newGravity, camCF.XVector)
 	local lerpedArc = CFrame.new():Lerp(sphericalArc, TRANSITION)

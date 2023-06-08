@@ -38,31 +38,19 @@ local Utility = require(Shared:WaitForChild("Utility"))
 
 local Signal = require(Shared:WaitForChild("Signal"))
 local Binder = require(Shared:WaitForChild("Binder")) 
+local Maid = require(Shared:WaitForChild("Maid"))
 
-local GravityClass = require(Knit.Modules.Classes.GravityClass)
-
-local LastResult = nil 
+local ControllerModule = require(Knit.Modules.Classes.GravityClass)
 
 local GravityController = Knit.CreateController { 
     Name = "GravityController",
+
     State = "Normal",
-    Field = nil;
-	Controller = nil;
-	
-	FieldChangedDebounce = os.clock();
-	JumpRequest = false;
-	ProcessJump = false;
-	Platforming = false;
-	HeartbeatConnection = nil; 
-	Active = false; 
+    Field = nil,
+	Controller = nil,
 
-	ActiveFields = {};
-
-	Field_Type = "Center",
-	Field_Net_Active = false;
-
-	GravityFieldTimeout = os.time(); 
-	DebounceWait = 0.05
+	_controllerMaid = Maid.new(),
+	_lastUpVector = Vector3.new(0,-1,0),
 }
 
 -- Private Methods
@@ -76,231 +64,60 @@ function GravityController:GetCamera()
 	return self.Camera 
 end 
 
-function GravityController:_checkNormals(a, b)
-	local angle = (math.acos(a:Dot(b)/(a.Magnitude * b.Magnitude))) --* sn
-	return math.deg(angle) 
-end
-
-function GravityController:_getNearestField()
-	if (Utility:CountTable(self.ActiveFields) == 0) then warn("No active fields found.") return end 
-
-	local _closestField, _maxDistance = nil, math.huge 
-
-	for _, currentFieldCheck in pairs(self.ActiveFields) do
-		if (currentFieldCheck) then
-			--[[local _hit = false 
-
-			if (GameController.State ~= "Lobby" and currentFieldCheck.LobbyFriendly) then 
-				warn("Lobby zone hit... continuing")
-				_hit = true 
-				continue 
-			end 
-
-			if (_hit) then print("Hit") end --]]
-			
-			local _distanceCheck = currentFieldCheck:IsPlayerInRange(true)
-
-			if (_distanceCheck < _maxDistance) then 
-				_maxDistance = _distanceCheck
-				_closestField = currentFieldCheck 
-			end
-		end
-	end
-
-	return _closestField 
-end 
-
 -- @ Proxy for self.ActiveFields[Object] 
-function GravityController:_findField(Object)
+function GravityController:GetField(Object)
 	return self.ActiveFields[Object]
 end
 
-function GravityController:_getFieldFromNode(_node)
-	local _fieldObj = _node.Parent.Parent.Parent 
-	return self.ActiveFields[_fieldObj] 
-end 
-
-function GravityController:_getFieldObjectFromNode(_node)
-	local _fieldObj = _node.Parent.Parent.Parent 
-	return _fieldObj 
-end 
-
-function GravityController:_getFieldWithHighestPriority()
-	local _priorityCheck = math.huge 
-	local _fieldFound    = nil 
-
-	for i,_field in pairs(self.ActiveFields) do 
-		if (_field.Priority < _priorityCheck) then 
-			_priorityCheck 	= _field.Priority 
-			_fieldFound 	= _field 
-		end 
-	end
-
-	return _fieldFound 
-end 
-
--- Yields the current thread until the expected field loads. 
-function GravityController:WaitForField(object)
-	local _field = self.ActiveFields[object] 
-
-	if (not _field) then 
-		repeat wait() _field = self.ActiveFields[object] until _field 
-	end
-
-	return _field 
-end 
-
 -- Public Methods 
+function GravityController:SetState(State) 
+	if State == "GravityField" then 
+		if not self.Controller then 
+			local Player = game.Players.LocalPlayer 
 
-function GravityController:SetState(State, _field, _spawn)
-	-- First handle this condition: 
-	-- If state is the same, but we're trying to set a field. 
-	-- This is more important when we're using a server setstate and it is trying to set a field on all players, if some are different, this will remedy that problem. 
-	
-	if (self.State == State) then 
-		local _fieldClass = _field 
-
-		if (type(_field) == "userdata") then 
-			_fieldClass = self:_findField(_field) 
-		end 
-
-		if (self.Field ~= _fieldClass) then 
-			self.Field = _fieldClass 
-		end 
-
-		return 
-	end 
-
-	-- Now, the State is different. 
-	-- Change from previous state to new state. 
-
-	self.State = State
-	
-	if (State == "GravityField") then -- Our old State must have been "Normal"
-		if (not self.Controller) then
-			if (_field) then 
-				local _fieldClass = _field 
-
-				if (type(_field) == "userdata") then 
-					_fieldClass = self:_findField(_field)
-				end 
-
-				self.Field = _fieldClass 
-
-				warn("Field set to:", _fieldClass)
-			end
-
-			-- 
-
-            local Player = game.Players.LocalPlayer 
-
-			self.Controller = GravityClass.new(Player)
+			self.Controller = ControllerModule.new(Player)
 			self.Controller.GetGravityUp = self.GetGravityUp
 
-			-- No field, grab nearest default field. 
-
-			if (not self.Field) then 
-				self.Field = self:_getFieldWithHighestPriority() 
-			end
-		end
-
-		--self:SetActive(true) 
-	elseif (State == "Normal") then -- Our old State must have been "GravityField" 
-		if (self.Controller) then
-			--self.Controller.Camera.normalizeRestraint = true 
-			self.Controller:ResetGravity(Vector3.new(0,1,0)) 
-			self.Controller:Destroy()
-
-			self.Controller = nil 
-			--warn("Controller paused.") 
-		end
-		
-		self.Field = nil 
-		
-		--self:SetActive(false) 
-	elseif (State == "Fly") then 
-		-- Now move to GravityField 
-		self:SetState("GravityField") 
-	end 
+			self._controllerMaid:GiveTask(self.Controller) 
+		end 
+	else 
+		self._controllerMaid:DoCleaning()
+	end
 end
 
-function GravityController:Raycast(FilterType, Descendants, Origin, Direction)
-	local raycastParam = RaycastParams.new()
-	raycastParam.FilterType = FilterType
-	raycastParam.FilterDescendantsInstances = Descendants 
-
-	return workspace:Raycast(Origin, Direction, raycastParam) 
-end 
-
-function GravityController:GetNearestNodeUpVector(node_map, origin)
-	local closestNode, closestMax = nil, math.huge 
-	for i,v in pairs(node_map) do
-		local mag = (v.WorldCFrame.p - origin.p).Magnitude
-		if mag < closestMax then 
-			closestMax = mag 
-			closestNode = v 
-		end 
-	end 
-
-	return closestNode.UpVector.Value
-end 
-
-function GravityController.GetGravityUp(self, oldGravityUp)
-	local hrpCF = self.HRP.CFrame
+function GravityController.GetGravityUp(self)
 	local Field = GravityController.Field
+	assert(Field, "No Field has been set.")
+
+	local GravityService = Knit.GetService("GravityService") 
 	local Camera = GravityController:GetCamera() 
 
-	if Field then
-		--[[local _result = - GravityController:GetNearestNodeUpVector(Field.Node_Map, hrpCF) or Vector3.new(0,1,0) 	
-
-		if LastResult then 
-			if _result ~= LastResult then 
-				Camera:SetTargetUpVector(_result)
-				
-				LastResult = _result 
-
-				return _result 
-			else 
-				return LastResult 
-			end
-		else 
-			Camera:SetTargetUpVector(_result)
-			LastResult = _result 
-			return _result 
-		end--]]
-
-		local _direction = Field.GetRayDirection(hrpCF.p) * 10000
-		local _hrpP      = hrpCF.p 
-		local _hitList   = Field.HitList or {}
-
-		table.insert(_hitList, Field.Object)
-
-		local _normalRay = GravityController:Raycast(Enum.RaycastFilterType.Whitelist, _hitList, _hrpP, _direction) 
-		local _result
-
-		if _normalRay then
-			_result = _normalRay.Normal 
-		else 
-			_result = oldGravityUp
-		end
-
-		--warn("Setting Camera", _result)
-		local Camera = GravityController:GetCamera() 
-		Camera:SetTargetUpVector(_result) 
-
-		return _result
-	else
-		return oldGravityUp
+	if Field.UpVector then
+		local desiredUpVector = Field.UpVector * Field.UpVectorMultiplier
+		Camera:SetTargetUpVector(desiredUpVector) 
+		return desiredUpVector
 	end
+
+	local _setUpVector = self._lastUpVector
+	
+	GravityService:RequestUpVector(Field.GUID):andThen(function(upVector)
+		if upVector then 
+			_setUpVector = upVector
+			self._lastUpVector = upVector
+		end 
+	end)
+
+	if _setUpVector then 
+		Camera:SetTargetUpVector(_setUpVector) 
+	end 
+
+	return _setUpVector 
+	--[[if _setUpVector == Vector3.new(0,-1,0) then 
+		--print("We're in Normal planar space.")
+	end--]]
 end--]]
 
---[[ @ FIELD CHECK 
-
-	Field Check is for searching for any nearby GravityFields or GravityZones:
-	If we have an Active Field in self.Field, we should only continue with a check if there's another field in the vicinity.
-
-]]
-
+--[[
 function GravityController:FieldCheck()
     local Player = game.Players.LocalPlayer
 
@@ -335,40 +152,34 @@ function GravityController:FieldCheck()
 			end 
 		end
 	end
-end
+end--]]
 
 function GravityController:KnitStart()
+	local GravityService = Knit.GetService("GravityService") 
 
-	--[[
-	self.Services.GravityService.SetState:Connect(function(State, ...)
+	GravityService.SetState:Connect(function(State, ...)
 		self:SetState(State, ...)
-	end)--]]
-
-	---------
-    local GravityField = require(Knit.Modules.Classes.GravityField)
-	local GravityFieldBinder = Binder.new("GravityField", GravityField) 
-
-	GravityFieldBinder:GetClassAddedSignal():Connect(function(_field)
-		if _field and not _field._ShellClass then 
-			--warn("New Gravity Field:", _field)
-			if self.ActiveFields[_field.Object] then warn("GravityField class already created for this field.", _field.Object:GetFullName()) return end 
-			self.ActiveFields[_field.Object] = _field 
-        end 
 	end)
 
-	GravityFieldBinder:GetClassRemovingSignal():Connect(function(_field)
-		if self.ActiveFields[_field.Object] then 
-			self.ActiveFields[_field.Object] = nil 
+	GravityService.SetField:Connect(function(Field)
+		self.Field = Field
+	end) 
+
+	GravityService.ReconcileField:Connect(function(newField)
+		if self.Field and newField.GUID == self.Field.GUID then 
+			for i,v in pairs(newField) do
+				self.Field[i] = v 
+			end
 		end 
 	end) 
 
-	GravityFieldBinder:Start() 
-
-	task.delay(2, function()
-    	self:SetState("GravityField")
-	end)--]] 
+	---------
+    local GravityField = require(Knit.Modules.Classes.GravityField)
+	local GravityFieldBinder = Binder.new("GravityZone", GravityField) 
 
 	self:SetCamera() 
+
+	GravityFieldBinder:Start() 
 end
 
 function GravityController:KnitInit()
