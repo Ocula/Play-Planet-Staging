@@ -7,8 +7,8 @@ local Knit = require(ReplicatedStorage.Packages:WaitForChild("Knit"))
 local PatchCameraModule = ReplicatedStorage.Packages:WaitForChild("patch-cameramodule") 
 
 -- Dependencies for Client bootup
-local Utility = require(Shared.Utility)
-local Signal = require(Shared.Signal) 
+local Utility = require(Shared:WaitForChild("Utility"))
+local Signal = require(Shared:WaitForChild("Signal"))
 
 Knit.Library = {}
 Knit.Modules = {}

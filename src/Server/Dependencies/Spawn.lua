@@ -74,8 +74,7 @@ function Spawn:Teleport(_player, _radius)
 	-- Hold player here for a second to double check SetState
 
 	if self.SetState then -- This spawn is in a different Gravity place. 
-		local GravityService = Knit.GetService("GravityService") 
-		GravityService.Client.SetState:Fire(_player, self.SetState) 
+		_player:SetState(self.SetState) 
 	end
 
 	if self.HoldPlayer then

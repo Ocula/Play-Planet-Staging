@@ -52,8 +52,12 @@ function SpawnService:LobbySpawn(_player)
 	local state = _spawn:GetAttribute("SetState") 
 
 	if state then -- This spawn is in a different Gravity place. 
-		local GravityService = Knit.GetService("GravityService") 
-		GravityService.Client.SetState:Fire(_player, state) 
+		local PlayerService = Knit.GetService("PlayerService")
+		local Player = PlayerService:GetPlayer(_player) 
+
+		assert(Player, "Player was not indexed into the server properly.") 
+
+		Player:SetState(state)
 	end
 
 	Utility:TeleportPlayer(_player, _spawn.CFrame, 0)

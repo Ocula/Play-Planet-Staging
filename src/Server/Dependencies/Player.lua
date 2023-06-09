@@ -57,6 +57,9 @@ function Player.new(_player, _profile)
 		-- Lobby 
 		Lobby = false,
 
+		-- State
+		State = "Normal", 
+
 		-- Player Properties 
 		Image = Players:GetUserThumbnailAsync(
 			_player.UserId,
@@ -139,6 +142,13 @@ function Player:Enable()
 	self._disableEvents = false
 end
 
+function Player:SetState(state: string)
+	local GravityService = Knit.GetService("GravityService") 
+	GravityService.Client.SetState:Fire(self.Player, state)
+
+	self.State = state 
+end 
+
 function Player:SetJumpHeight(num)
 	self.Humanoid.JumpHeight = num -- Set this on the server so any time our player Humanoid regenerates, we have the value saved.
 
@@ -162,7 +172,7 @@ function Player:SetField(Field)
 		local GravityService = Knit.GetService("GravityService") 	
 		local packagedField = Field:Package() -- Send this whenever we first set a new field.
 		
-		GravityService.Client.SetField:Fire(self.Player, packagedField) 
+		GravityService.Client.SetField:Fire(self.Player, packagedField)
 	end
 	-- Send to client. 
 end
@@ -200,23 +210,34 @@ function Player:connectCharacterEvents(player)
 		end
 
 		humanoid.Died:Connect(function()
+			self._isDead = true 
+			self:SetState("Normal") 
+
 			if self._disableEvents then
 				return
 			end
 
-			self.Player.Character = nil
-
-			task.spawn(function()
-				self:Spawn()
+			task.delay(game.Players.RespawnTime, function()
+				self:Spawn() 
 			end)
 		end)
 	end
 end
 
+function Player:isDead()
+	local char = self.Player.Character
+	if char then 
+		local hum = char:FindFirstChild("Humanoid") 
+		return hum.Health == 0 or self._isDead 
+	end 
+end 
+
 function Player:Spawn()
-	if not self.Player.Character then
+	if not self.Player.Character or self:isDead() then
+		self._isDead = false 
+
 		self.Player:LoadCharacter()
-		self:connectCharacterEvents(self.Player)
+		self:connectCharacterEvents(self.Player) 
 	end
 
 	local SpawnService = Knit.GetService("SpawnService")
@@ -229,6 +250,7 @@ function Player:Spawn()
 			self.PropertyChangedSignal:Fire("Lobby", true)
 		end
 	else
+		warn("active spawn") 
 		self._activeSpawn:Teleport(self)
 	end
 end

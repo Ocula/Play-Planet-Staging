@@ -55,9 +55,10 @@ function PlayerService:new(newPlayer)
 		-- Handle player only if profile is loaded.
 		local playerObject = Player.new(newPlayer, loadedProfile)
 
+		self.Players[newPlayer] = playerObject
+
 		playerObject:Spawn() -- Yield until spawned.
 
-		self.Players[newPlayer] = playerObject
 		self.Client.PlayerLoaded:Fire(newPlayer, true)
 	end
 end

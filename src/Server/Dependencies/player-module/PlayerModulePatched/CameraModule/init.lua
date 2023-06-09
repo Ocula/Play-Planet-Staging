@@ -1,3 +1,15 @@
+local patchModule = script.Parent:FindFirstChild("Patch")
+local patch = patchModule and require(patchModule)
+
+local setmetatable = setmetatable
+if patch then
+	if patch.redirect() then
+		return patch.result()
+	end
+
+	setmetatable = patch.setmetatable()
+end
+
 --!nonstrict
 --[[
 	CameraModule - This ModuleScript implements a singleton class to manage the
@@ -133,6 +145,7 @@ function CameraModule.new()
 	self:ActivateCameraController(self:GetCameraControlChoice())
 	self:ActivateOcclusionModule(Players.LocalPlayer.DevCameraOcclusionMode)
 	self:OnCurrentCameraChanged() -- Does initializations and makes first camera controller
+
 	RunService:BindToRenderStep("cameraRenderUpdate", Enum.RenderPriority.Camera.Value, function(dt) self:Update(dt) end)
 
 	-- Connect listeners to camera-related properties

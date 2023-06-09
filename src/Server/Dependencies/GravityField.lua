@@ -38,6 +38,7 @@ function GravityField.new(fieldObject)
     local gravityZone = fieldObject:FindFirstChild("GravityZone") or {Value = nil}
     local upVector = fieldObject:GetAttribute("UpVector") 
 
+    -- If the UpVector isn't manually set, then we'll check if it has a GravityZone Value. If no GravityZone value AND no manual UpVector, we run into problems. 
     if not upVector then 
         assert(gravityZone.Value ~= nil, "GravityField could not find a GravityZone set. Make sure to place an ObjectValue pointing to the GravityObject.")
     end 
@@ -47,6 +48,7 @@ function GravityField.new(fieldObject)
     local overlapCheck = require(Knit.Library.OverlapCheck)
     local attributes = fieldObject:GetAttributes()
 
+    -- Only place in Relative CFs on specific objects, maybe? 
     local newField = {
         GUID = game:GetService("HttpService"):GenerateGUID(false),
 
@@ -61,7 +63,7 @@ function GravityField.new(fieldObject)
         Gravity = 196.2,
         Priority = 0, 
         UpVector = nil,
-        UpVectorMultiplier = Vector3.new(1,1,1), -- can only be 1 or -1
+        UpVectorMultiplier = Vector3.new(1,1,1), -- >:) 
         Enabled = true, 
 
         -- Field Checking
@@ -76,6 +78,12 @@ function GravityField.new(fieldObject)
         newField[property] = value 
     end
 
+    if newField.UpVector == nil then -- If we have no manual upvector and we're in a block zone, we can find that UpVector pretty easily on our own.
+        if fieldObject.Shape == Enum.PartType.Block then 
+            newField.UpVector = fieldObject.CFrame.YVector
+        end 
+    end
+    
     local self = setmetatable(newField, GravityField)
 
     --

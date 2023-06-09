@@ -51,24 +51,27 @@ local GravityService = Knit.CreateService({
 function GravityService.Client:RequestUpVector(player, forceFieldId: string)
     local PlayerService = Knit.GetService("PlayerService") 
     local playerCharacter = player.Character 
-    local hrp = playerCharacter:FindFirstChild("HumanoidRootPart")
 
-    local playerObject = PlayerService:GetPlayer(player)
+    if playerCharacter then 
+        local hrp = playerCharacter:FindFirstChild("HumanoidRootPart")
 
-    if hrp and playerObject then 
-        -- Check if the server sees this field. 
-        local fieldId = playerObject.Field or forceFieldId 
+        local playerObject = PlayerService:GetPlayer(player)
 
-        if fieldId then
-            --[[if forceFieldId ~= playerObject.Field then -- Will be triggered by latency.
-                warn(player, "is requesting an UpVector of a field that they aren't parented to.", forceFieldId, playerObject.Field)
-                return nil 
-            end--]] 
+        if hrp and playerObject then 
+            -- Check if the server sees this field. 
+            local fieldId = playerObject.Field or forceFieldId 
 
-            return self.Server.Fields[fieldId]:GetUpVector(hrp.Position)
-        else 
-            warn(player, "is requesting an UpVector of a Field that they aren't parented to.")
-        end
+            if fieldId then
+                --[[if forceFieldId ~= playerObject.Field then -- Will be triggered by latency.
+                    warn(player, "is requesting an UpVector of a field that they aren't parented to.", forceFieldId, playerObject.Field)
+                    return nil 
+                end--]] 
+
+                return self.Server.Fields[fieldId]:GetUpVector(hrp.Position)
+            else 
+                warn(player, "is requesting an UpVector of a Field that they aren't parented to.")
+            end
+        end 
     end 
 end
 

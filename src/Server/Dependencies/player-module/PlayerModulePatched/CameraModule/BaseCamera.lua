@@ -57,7 +57,7 @@ local UserGameSettings = UserSettings():GetService("UserGameSettings")
 
 local player = Players.LocalPlayer
 
-local fakeCamera = require(script.Parent.BlankCamera)
+local Camera = require(script.Parent.BlankCamera)
 
 -- [[ Flags ]]
 local FFlagUserCameraGamepadZoomFix
@@ -247,12 +247,16 @@ end
 
 function BaseCamera:GetSubjectCFrame(): CFrame
 	local result = self.lastSubjectCFrame
-	local camera = fakeCamera 
+	local camera = Camera 
 	local cameraSubject = camera and camera.CameraSubject
 
 	if not cameraSubject then
 		return result
 	end
+
+	if not cameraSubject:IsA("Humanoid") then 
+		warn("problem?")
+	end 
 
 	if cameraSubject:IsA("Humanoid") then
 		local humanoid = cameraSubject
@@ -312,7 +316,7 @@ function BaseCamera:GetSubjectCFrame(): CFrame
 end
 
 function BaseCamera:GetSubjectVelocity(): Vector3
-	local camera = fakeCamera
+	local camera = Camera
 	local cameraSubject = camera and camera.CameraSubject
 
 	if not cameraSubject then
@@ -341,7 +345,7 @@ function BaseCamera:GetSubjectVelocity(): Vector3
 end
 
 function BaseCamera:GetSubjectRotVelocity(): Vector3
-	local camera = fakeCamera
+	local camera = Camera
 	local cameraSubject = camera and camera.CameraSubject
 
 	if not cameraSubject then
@@ -396,7 +400,7 @@ end
 
 function BaseCamera:GetSubjectPosition(): Vector3?
 	local result = self.lastSubjectPosition
-	local camera = fakeCamera
+	local camera = Camera
 	local cameraSubject = camera and camera.CameraSubject
 
 	if cameraSubject then
@@ -473,7 +477,7 @@ function BaseCamera:UpdateDefaultSubjectDistance()
 end
 
 function BaseCamera:OnViewportSizeChanged()
-	local camera = fakeCamera
+	local camera = Camera
 	local size = camera.ViewportSize
 	self.portraitMode = size.X < size.Y
 	self.isSmallTouchScreen = UserInputService.TouchEnabled and (size.Y < 500 or size.X < 700)
@@ -772,7 +776,7 @@ end
 -- never be used as the starting point for updating the nominal camera-to-subject distance (self.currentSubjectDistance)
 -- since that is a desired target value set only by mouse wheel (or equivalent) input, PopperCam, and clamped to min max camera distance
 function BaseCamera:GetMeasuredDistanceToFocus(): number?
-	local camera = fakeCamera
+	local camera = Camera
 	if camera then
 		return (camera.CoordinateFrame.p - camera.Focus.p).magnitude
 	end
@@ -781,11 +785,11 @@ end
 
 function BaseCamera:GetCameraLookVector(): Vector3
 	--print(workspace.CurrentCamera.CFrame.LookVector) 
-	return fakeCamera and fakeCamera.CFrame.LookVector or UNIT_Z
+	return Camera and Camera.CFrame.LookVector or UNIT_Z
 end
 
 function BaseCamera:GetDummyCam() 
-	return fakeCamera 
+	return Camera 
 end 
 
 function BaseCamera:CalculateNewLookCFrameFromArg(suppliedLookVector: Vector3?, rotateInput: Vector2): CFrame

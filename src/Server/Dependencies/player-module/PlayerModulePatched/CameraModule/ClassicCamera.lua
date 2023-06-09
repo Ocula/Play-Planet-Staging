@@ -31,9 +31,6 @@ local BaseCamera = require(script.Parent:WaitForChild("BaseCamera"))
 local ClassicCamera = setmetatable({}, BaseCamera)
 ClassicCamera.__index = ClassicCamera
 
---[[ Ocula's Next Attempt at Going Crazy <3 ]]
-local newFakeCamera = require(script.Parent.BlankCamera) 
-
 function ClassicCamera.new()
 	local self = setmetatable(BaseCamera.new(), ClassicCamera)
 
@@ -74,13 +71,11 @@ function ClassicCamera:Update()
 	local now = tick()
 	local timeDelta = now - self.lastUpdate
 
-	local camera = newFakeCamera
-	
+	local camera = workspace.CurrentCamera
 	local newCameraCFrame = camera.CFrame
 	local newCameraFocus = camera.Focus
 
 	local overrideCameraLookVector = nil
-
 	if self.resetCameraAngle then
 		local rootPart: BasePart = self:GetHumanoidRootPart()
 		if rootPart then
@@ -116,8 +111,6 @@ function ClassicCamera:Update()
 
 	local userRecentlyPannedCamera = now - self.lastUserPanCamera < TIME_BEFORE_AUTO_ROTATE
 	local subjectPosition: Vector3 = self:GetSubjectPosition()
-
-	--warn(subjectPosition, player, camera)
 
 	if subjectPosition and player and camera then
 		local zoom = self:GetCameraToSubjectDistance()
@@ -162,7 +155,6 @@ function ClassicCamera:Update()
 						end
 
 						local y = Util.GetAngleBetweenXZVectors(forwardVector, self:GetCameraLookVector())
-
 						if Util.IsFinite(y) and math.abs(y) > 0.0001 then
 							rotateInput = rotateInput + Vector2.new(y * percent, 0)
 						end
@@ -182,7 +174,7 @@ function ClassicCamera:Update()
 
 					-- Check for NaNs
 					if Util.IsFinite(y) and math.abs(y) > 0.0001 and math.abs(y) > thetaCutoff * timeDelta then
-						rotateInput = rotateInput + Vector2.new(y, 0)
+						rotateInput = rotateInput --+ Vector2.new(y, 0)
 					end
 				end
 			end
@@ -198,7 +190,6 @@ function ClassicCamera:Update()
 			end
 
 			local cameraFocusP = newCameraFocus.p
-
 			if VREnabled and not self:IsInFirstPerson() then
 				local vecToSubject = (subjectPosition - camera.CFrame.p)
 				local distToSubject = vecToSubject.magnitude
@@ -210,8 +201,7 @@ function ClassicCamera:Update()
 					local desiredDist = math.min(distToSubject, zoom)
 					vecToSubject = self:CalculateNewLookVectorFromArg(nil, rotateInput) * desiredDist
 					local newPos = cameraFocusP - vecToSubject
-					local desiredLookDir = camera.CFrame.lookVector -- this could be wrong!
-
+					local desiredLookDir = camera.CFrame.lookVector
 					if flaggedRotateInput.x ~= 0 then
 						desiredLookDir = vecToSubject
 					end
@@ -220,24 +210,17 @@ function ClassicCamera:Update()
 					newCameraCFrame = CFrame.new(newPos, lookAt) + Vector3.new(0, cameraHeight, 0)
 				end
 			else
-				--if rotateInput.Magnitude > 0.00001 then print("RotateInput:", rotateInput) end
-
-				--self:SetDesiredPitchYaw(rotateInput) 
-
 				local newLookVector = self:CalculateNewLookVectorFromArg(overrideCameraLookVector, rotateInput)
-
-				--print("newLookVector:", newLookVector)
 				newCameraCFrame = CFrame.new(cameraFocusP - (zoom * newLookVector), cameraFocusP)
 			end
 		else -- is FollowCamera
-			local newLookVector = self:CalculateNewLookVectorFromArg(overrideCameraLookVector, rotateInput)
+			local newLookVector = self:CalculateNewLookVectorFromArg(nil, rotateInput)
 
 			if VRService.VREnabled then
 				newCameraFocus = self:GetVRFocus(subjectPosition, timeDelta)
 			else
 				newCameraFocus = CFrame.new(subjectPosition)
 			end
-
 			newCameraCFrame = CFrame.new(newCameraFocus.p - (zoom * newLookVector), newCameraFocus.p) + Vector3.new(0, cameraHeight, 0)
 		end
 

@@ -6,12 +6,12 @@ local Camera = workspace.CurrentCamera --:Clone()
 -- set hum
 local player = game.Players.LocalPlayer
 
-player.CharacterAdded:Connect(function(chr)
+--[[player.CharacterAdded:Connect(function()
     local hum = player.Character:WaitForChild("Humanoid") 
    -- local hrp = chr:WaitForChild("HumanoidRootPart") 
     Camera.CameraSubject = hum 
     --Camera.CameraType = "Custom"
-end)
+end)--]]
 
 --[[{
     CoordinateFrame = CFrame.new();
