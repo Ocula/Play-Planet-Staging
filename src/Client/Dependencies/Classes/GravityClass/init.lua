@@ -72,6 +72,20 @@ function GravityControllerClass.new(player)
 	return self
 end
 
+-- Debug
+
+function updateDebugVector(rotate) 
+	local plr = game.Players.LocalPlayer 
+	local deb = plr.PlayerGui:WaitForChild("Debug")
+
+	local vec = deb.Vector
+	local vFrame = vec.ViewportFrame
+	local world = vFrame.WorldModel
+	local part = world.CharacterRotate 
+
+	part.WorldPivot = CFrame.new() * rotate 
+end 
+
 -- Private Methods
 
 local function getRotationBetween(u, v, axis)
@@ -118,6 +132,17 @@ local function onHeartbeat(self, dt)
 	self._prevCFrame = standingPart and standingPart.CFrame
 end
 
+local function orthogonalizeCameraLookVector(lookVector, upVector)
+    lookVector = lookVector.Unit
+    upVector = upVector.Unit
+    
+    local dotProduct = lookVector:Dot(upVector)
+    local projectionVector = dotProduct * upVector
+    local orthogonalizedLookVector = lookVector - projectionVector
+    
+    return orthogonalizedLookVector.Unit
+end
+
 local function onGravityStep(self, dt)
 	local camCF = workspace.CurrentCamera.CFrame
 
@@ -158,14 +183,16 @@ local function onGravityStep(self, dt)
 	local newCharRotation = CFrame.new()
 	local newCharCF = CFrame.fromMatrix(ZERO3, charRight, newGravity, -charForward)
 
-	if self._camera.CameraModule:IsCamRelative() then
-		newCharCF = CFrame.fromMatrix(ZERO3, charRight, newGravity, -charForward)
+	if self._camera.CameraModule:IsCamRelative() then 
+		newCharRotation = newCharRotation:Lerp(CFrame.fromAxisAngle(camCF.LookVector, 0), 1)
+		--newCharRotation:Lerp(CFrame.new(, 0.7)
 	elseif isInputMoving then
+		--warn("rotating") 
 		newCharRotation = newCharRotation:Lerp(getRotationBetween(
 			charForward,
 			worldMove,
 			newGravity
-		), 0.7)
+		), .7)
 	end
 
 	-- calculate forces
@@ -188,6 +215,8 @@ local function onGravityStep(self, dt)
 	local walkForce = walkForceM > 0 and (dVelocity / dVelocityM)*walkForceM or ZERO3
 
 	local charRotation = newCharRotation * newCharCF
+
+	updateDebugVector(charRotation) 
 
 	self.StateTracker:Update(self._gravityUp, self._collider:IsGrounded(false), isInputMoving)
 	self._collider:Update(walkForce + gForce, charRotation)
