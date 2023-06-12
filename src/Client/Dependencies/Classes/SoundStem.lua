@@ -4,7 +4,7 @@
 --[[
 
     SoundStem Object
-        -> Inside of it, each sound is turned into a Stem Class
+        -> Inside of it, each sound is fed into a Stem Class
             -> Stem Classes handle the logic for all individual stems. Separates out the intro / middle loop / outro.
             -> When you play an individual stem it will play intro & middle, and then outro will only play when Stop(_outro = true) is called. 
             -> 
