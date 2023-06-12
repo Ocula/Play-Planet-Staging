@@ -75,6 +75,10 @@ end
 -- Debug
 
 function updateDebugVector(rotate) 
+	if rotate then 
+		return -- turn this off for now 
+	end 
+	
 	local plr = game.Players.LocalPlayer 
 	local deb = plr.PlayerGui:WaitForChild("Debug")
 
@@ -83,7 +87,21 @@ function updateDebugVector(rotate)
 	local world = vFrame.WorldModel
 	local part = world.CharacterRotate 
 
-	part.WorldPivot = CFrame.new() * rotate 
+	local cam = world:FindFirstChild("Camera")
+
+	if not cam then 
+		cam = Instance.new("Camera")
+		cam.Parent = world 
+		vFrame.CurrentCamera = cam 
+	end 
+
+	part:SetPrimaryPartCFrame(CFrame.new() * rotate) 
+
+	local x,y,z = workspace.CurrentCamera.CFrame:ToOrientation()
+	local setCF = part.PrimaryPart.CFrame * CFrame.Angles(x,y,z)
+	local setP = setCF * CFrame.new(0,0,-10) 
+
+	cam.CFrame = CFrame.new(setP.p, part.PrimaryPart.Position)  
 end 
 
 -- Private Methods
@@ -143,8 +161,16 @@ local function orthogonalizeCameraLookVector(lookVector, upVector)
     return orthogonalizedLookVector.Unit
 end
 
+local testpart = Instance.new("Part")
+testpart.Parent = workspace
+testpart.Anchored = true 
+testpart.Transparency = 0.3
+testpart.Size = Vector3.new(1,1,3)
+testpart.CFrame = CFrame.new(0,100,0) 
+
 local function onGravityStep(self, dt)
-	local camCF = workspace.CurrentCamera.CFrame
+	--local camCF = workspace.CurrentCamera.CFrame
+	local camCF = self._camera.CameraModule:GetCameraCFrame() -- We'll manually acquire this to avoid any discrepancies.
 
 	-- update the gravity vector
 	local oldGravity = self._gravityUp
@@ -159,14 +185,16 @@ local function onGravityStep(self, dt)
 
 	-- get world move vector
 	local fDot = camCF.ZVector:Dot(newGravity)
+
 	local cForward = math.abs(fDot) > 0.5 and math.sign(fDot) * camCF.YVector or -camCF.ZVector
-	
+
+
 	local left = -cForward:Cross(newGravity).Unit
 	local forward = -left:Cross(newGravity).Unit
 
 	local move = self._control:GetMoveVector()
-	local worldMove = forward*move.z - left*move.x
-	
+	local worldMove = (forward * move.z) - (left * move.x)
+	  
 	local isInputMoving = false
 	local length = worldMove.Magnitude
 
@@ -175,17 +203,43 @@ local function onGravityStep(self, dt)
 		worldMove = worldMove / length
 	end
 
+	--print(fDot, cForward) 
+
 	-- get the desired character cframe
-	local hrpLook = -self.HRP.CFrame.ZVector
+	local hrpLook = self.HRP.CFrame.LookVector
 	local charForward = hrpLook:Dot(forward)*forward + hrpLook:Dot(left)*left
 	local charRight = charForward:Cross(newGravity).Unit
 
 	local newCharRotation = CFrame.new()
 	local newCharCF = CFrame.fromMatrix(ZERO3, charRight, newGravity, -charForward)
 
-	if self._camera.CameraModule:IsCamRelative() then 
-		newCharRotation = newCharRotation:Lerp(CFrame.fromAxisAngle(camCF.LookVector, 0), 1)
-		--newCharRotation:Lerp(CFrame.new(, 0.7)
+	-- Get our newCharRotation. We will multiply this by newCharCF so we should be able to calculate a Unit direction...
+	if self._camera.CameraModule:IsCamRelative() then
+		-- Camera Look Vector
+
+		local camYaw = math.rad(self._camera.CameraModule:GetPitchYaw().Y)
+		local mouseLockOffset = Vector3.new()
+		local activeCam = self._camera.CameraModule.activeCameraController
+
+		if activeCam then 
+			mouseLockOffset = activeCam:GetMouseLockOffset()
+		end 
+
+		-- newGravity is our up vector. We construct a rotation around this up vector based on the camera's yaw.
+		-- newCharRotation = CFrame.fromAxisAngle(newGravity, camYaw)
+		newCharCF = CFrame.fromMatrix(mouseLockOffset, charRight, newGravity)
+
+		local pos = (self.HRP.CFrame * CFrame.new(0,5,0)).p
+		local testdir = pos + (charForward) 
+		testpart.CFrame = CFrame.new(pos, testdir)
+
+		if not self._lastCharRotation or self._lastCharRotation ~= newCharRotation then 
+			self._lastCharRotation = newCharRotation 
+
+			print("Yaw", camYaw) 
+			print("Rotation:", newCharRotation)
+			print("NewGravity:", newGravity)
+		end --]]
 	elseif isInputMoving then
 		--warn("rotating") 
 		newCharRotation = newCharRotation:Lerp(getRotationBetween(
@@ -194,6 +248,8 @@ local function onGravityStep(self, dt)
 			newGravity
 		), .7)
 	end
+
+	updateDebugVector(newCharRotation) 
 
 	-- calculate forces
 	local g = workspace.Gravity
@@ -215,8 +271,6 @@ local function onGravityStep(self, dt)
 	local walkForce = walkForceM > 0 and (dVelocity / dVelocityM)*walkForceM or ZERO3
 
 	local charRotation = newCharRotation * newCharCF
-
-	updateDebugVector(charRotation) 
 
 	self.StateTracker:Update(self._gravityUp, self._collider:IsGrounded(false), isInputMoving)
 	self._collider:Update(walkForce + gForce, charRotation)

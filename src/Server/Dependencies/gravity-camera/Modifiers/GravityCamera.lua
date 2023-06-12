@@ -106,7 +106,7 @@ return function(PlayerModule)
 
     function baseCamera:Reset()
         self._pitchYaw = basePitchYaw 
-    end 
+    end
 
     function baseCamera:GetCameraLookVector() 
         if not self._pitchYaw then 
@@ -120,6 +120,10 @@ return function(PlayerModule)
 
         return lookVector 
     end
+
+	function baseCamera:GetPitchYaw()
+		return self._pitchYaw 
+	end 
 
     function baseCamera:UpdatePitchYaw(rotateInput: Vector2)
         local updatedPY = self._pitchYaw + rotateInput 
@@ -209,6 +213,12 @@ return function(PlayerModule)
 	function cameraObject:GetTransitionRate(): number
 		return transitionRate
 	end
+	
+	function cameraObject:GetCameraCFrame()
+		if self.activeCameraController then 
+			return self._cameraCFrame or CFrame.new() 
+		end 
+	end 
 
     function cameraObject:IsFirstPerson()
 		if self.activeCameraController then
@@ -230,6 +240,12 @@ return function(PlayerModule)
 		end
 		return false
 	end
+
+	function cameraObject:GetPitchYaw()
+		if self.activeCameraController then 
+			return self.activeCameraController:GetPitchYaw() 
+		end 
+	end 
     
 	function cameraObject:IsCamRelative()
 		return self:IsMouseLocked() or self:IsFirstPerson()
@@ -270,6 +286,8 @@ return function(PlayerModule)
 			local currentCamera = game.Workspace.CurrentCamera :: Camera
 			currentCamera.CFrame = newCameraCFrame
 			currentCamera.Focus = newCameraFocus
+
+			self._cameraCFrame = newCameraCFrame
 
 			-- fixes issue with follow camera
 			self.activeCameraController.lastCameraTransform = newCameraCFrame

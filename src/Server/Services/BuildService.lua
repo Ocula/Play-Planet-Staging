@@ -26,16 +26,7 @@ function BuildService.Client:Build(player, id, cf)
         if (descendant:IsA("BasePart") or descendant:IsA("UnionOperation")) then 
             game:GetService("CollectionService"):AddTag(descendant, "PlacedObject") 
         end 
-    end 
-
-    -- Tween Object in
-    --[[for i = 0,1,.1 do
-        wait(.001) 
-        self.Server.Shared.Utility:ScaleModel(_obj, i) 
-    end 
-
-    self.Server.Shared.Utility:ScaleModel(_obj, 1)--]]
-
+    end
 end
 
 function BuildService.Client:_useSpringPad(player, pad)

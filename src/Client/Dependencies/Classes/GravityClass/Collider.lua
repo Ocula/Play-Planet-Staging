@@ -25,7 +25,7 @@ function ColliderClass.new(controller)
 
 	self.Model = Instance.new("Model")
 
-	local sphere, vForce, floor, floor2, gryo = create(self, controller)
+	local sphere, vForce, floor, floor2, gyro, gyroatt0, gyroatt1 = create(self, controller)
 
 	self._maid = Maid.new()
 	
@@ -35,7 +35,10 @@ function ColliderClass.new(controller)
 	self.VForce = vForce
 	self.FloorDetector = floor
 	self.JumpDetector = floor2
-	self.Gyro = gryo
+	self.Gyro = gyro 
+
+	self.GyroAtt0 = gyroatt0 
+	self.GyroAtt1 = gyroatt1 
 
 	init(self)
 
@@ -109,11 +112,34 @@ function create(self, controller)
 	vForce.Attachment0 = attach
 	vForce.Parent = controller.HRP
 
-	local gyro = Instance.new("BodyGyro")
+	local attachmentBlock = Instance.new("Part")
+	attachmentBlock.Parent = workspace.game.bin.client 
+	attachmentBlock.Transparency = 1
+	attachmentBlock.CanCollide = false 
+	attachmentBlock.Anchored = true
+	attachmentBlock.Name = "AttachmentBlock"
+	attachmentBlock.CanQuery = false 
+	attachmentBlock.Size = Vector3.new(1,1,1) 
+
+	local gyroAttachment0 = Instance.new("Attachment") 
+	gyroAttachment0.Parent = controller.HRP 
+	gyroAttachment0.Name = "Align"
+
+	local gyroAttachment1 = Instance.new("Attachment") 
+	gyroAttachment1.Parent = attachmentBlock 
+	gyroAttachment1.Name = "Align2"
+
+	local gyro = Instance.new("AlignOrientation")
+	gyro.Parent = controller.HRP 
+	gyro.Attachment0 = gyroAttachment0
+	gyro.Attachment1 = gyroAttachment1
+	gyro.RigidityEnabled = true 
+
+	--[[
 	gyro.P = 25000
 	gyro.MaxTorque = Vector3.new(100000, 100000, 100000)
 	gyro.CFrame = controller.HRP.CFrame
-	gyro.Parent = controller.HRP
+	gyro.Parent = controller.HRP--]]
 
 	floor.Touched:Connect(function() end)
 	floor2.Touched:Connect(function() end)
@@ -122,7 +148,7 @@ function create(self, controller)
 	floor.Parent = self.Model
 	floor2.Parent = self.Model
 
-	return sphere, vForce, floor, floor2, gyro
+	return sphere, vForce, floor, floor2, gyro, gyroAttachment0, gyroAttachment1
 end
 
 function init(self)
@@ -130,6 +156,9 @@ function init(self)
 	self._maid:GiveTask(self.VForce)
 	self._maid:GiveTask(self.FloorDetector)
 	self._maid:GiveTask(self.Gyro)
+	self._maid:GiveTask(self.GyroAtt0)
+	self._maid:GiveTask(self.GyroAtt1) 
+
 	self.Model.Name = "Collider"
 	self.Model.Parent = self.Controller.Character
 end
@@ -137,8 +166,11 @@ end
 -- Public Methods
 
 function ColliderClass:Update(force, cframe)
+	local x,y,z = cframe:ToOrientation() 
+	local orientation = Vector3.new(math.deg(x), math.deg(y), math.deg(z)) 
+
 	self.VForce.Force = force
-	self.Gyro.CFrame = cframe
+	self.GyroAtt1.Orientation = orientation 
 end
 
 function ColliderClass:IsGrounded(isJumpCheck)

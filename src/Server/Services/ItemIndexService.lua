@@ -64,6 +64,7 @@ local ItemIndexService = Knit.CreateService({
 	Name = "ItemIndexService", 
 	Client = {};
 	Index  = {}; -- The entire game content index. 
+	Sounds = {}; -- 
 
 	Loaded = false;
 }) 
@@ -163,9 +164,10 @@ end
 -- Parameters: None
 function ItemIndexService:Load()
 	local Assets 	= game:GetService("ReplicatedStorage"):WaitForChild("Assets")
-	local Items   	= Assets:WaitForChild("Items") 
+	local Items   	= Assets:WaitForChild("Items")
+	local Sounds	= Assets:WaitForChild("Sounds") 
 
-	local Game		= game:GetService("ServerStorage"):WaitForChild("Game") 
+	local Game		= game:GetService("ServerStorage"):WaitForChild("Game")
 
 	local Service = self
 
@@ -203,6 +205,7 @@ function ItemIndexService:Load()
 	--Find all objects
 	self.Index = findObjects(Items)
 	self.Game  = findObjects(Game)  
+	self.Sounds = findObjects(Sounds) 
 
 	----
 end 
@@ -218,9 +221,11 @@ function retrieveNamespacedInternal(index, itemIndex)
 
 	-- Check to make sure the index exists!
 	local object = index
+	warn("checking:", object)
 	for _, v in ipairs(arrayList) do
 		--Go down a level if we can
 		object = object[v]
+		warn("checking [2]:", object)
 
 		--Exit if we ever hit a nil pointer
 		if (object == nil) then 
@@ -261,6 +266,18 @@ function ItemIndexService:GetItem(itemIndex)
 
 	return object
 end
+
+function ItemIndexService:GetSound(itemIndex)
+	local object = retrieveNamespacedInternal(self.Sounds, itemIndex)
+
+	--Make sure we have an object
+	if (object) and (object.__ItemIndexType ~= "Object") then
+		warn("Item type " .. itemIndex .. " is not an object!")
+		return nil
+	end
+
+	return object
+end 
 
 -- Method for retrieving Map assets
 function ItemIndexService:GetMap(itemIndex) 
@@ -322,7 +339,12 @@ function ItemIndexService.Client:GetCategory(Player, ItemIndex)
 	return self.Server:GetCategory(ItemIndex)
 end
 
+function ItemIndexService.Client:GetSound(Player, ItemIndex)
+	return self.Server:GetSound(ItemIndex)
+end 
+
 function ItemIndexService.Client:GetItem(Player, ItemIndex)
+	warn("Getting Item:", ItemIndex, self.Index) 
 	return self.Server:GetItem(ItemIndex)
 end
 
