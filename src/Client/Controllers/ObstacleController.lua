@@ -26,7 +26,6 @@ function ObstacleController:KnitStart()
     local Obstacle = Binder.new("ObstacleObject", require(Knit.Modules.Classes.ObstacleObject))
 
     Obstacle:GetClassAddedSignal():Connect(function(newClass) 
-		warn("Obstacle Object") 
         if (newClass and not newClass._ShellClass) then 
             self.Active[newClass.Object] = newClass 
         end 

@@ -131,7 +131,7 @@ function Load.new()
 	-- Prep BackgroundTexture
 	self.props.BackgroundTexture.Transparency = Computed(function()
 		local currentTransparency = self.props.Transparency:get()
-		return 0.95 + currentTransparency
+		return 0.98 + currentTransparency
 	end)
 
 	self.props.BackgroundTexture.Position = State(UDim2.new(0, 0, 0, 0))
@@ -202,6 +202,7 @@ function Load.new()
 		return UDim2.new(logoOrig.X + magRes, 0, logoOrig.Y + magRes, 0)
 	end)
 
+	--[[
 	self._maid:GiveTask(RunService.RenderStepped:Connect(function(dt)
 		local currentOverlayPosition = self.props.BackgroundTexture.Position:get()
 		local currentSet = {
@@ -215,7 +216,7 @@ function Load.new()
 		end
 
 		self.props.BackgroundTexture.Position:set(UDim2.new(0, currentSet.X, 0, currentSet.Y))
-	end))
+	end))--]]
 
 	self._object = LoadScreen(self.props)
 	self._maid:GiveTask(self._object)

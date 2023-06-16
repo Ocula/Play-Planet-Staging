@@ -29,9 +29,10 @@ local Interface = Knit.CreateController({
 
 	playerListUpdated = Signal.new(),
 
-	goalWait = 1.5, -- We dont want the player waiting to load in any longer than 3 seconds.
+	goalWait = 3, -- We dont want the player waiting to load in any longer than 3 seconds.
 
 	_epilepsy = State(true),
+	_serverLoad = Signal.new() 
 	-- For players with epilepsy. They will be prompted during Load-in on their first visit. Can be changed in settings.
 	-- This will wrap any UI calls with a Safety net.
 	-- Any running UI can check here
@@ -75,6 +76,20 @@ function Interface:Load()
 		local _overTime = false
 		local _currentTime = os.time()
 
+		local sound = Knit.GetController("Sound") 
+		local themeSong = sound.Trees["stems:balderdash"] 
+
+		local _themeSongConnection = themeSong._beatChange:Connect(function()
+			local _id = "Shake" .. math.random(1, 3)
+			LoadObject:Shake(math.random(10, 30) / 10, _id)
+			LoadObject:SetLoadingPercentage(getCurrentLoadBarPosition())
+		end)
+
+		self._serverLoad:Wait()
+
+		_themeSongConnection:Disconnect() 
+
+		--[[
 		repeat
 			local _id = "Shake" .. math.random(1, 3)
 			LoadObject:Shake(math.random(10, 30) / 10, _id)
@@ -93,7 +108,7 @@ function Interface:Load()
 				self.serverLoaded = true
 			end
 
-		until self.serverLoaded
+		until self.serverLoaded--]]
 	end
 
 	local _currentTime = os.time()
@@ -208,6 +223,7 @@ function Interface:KnitInit()
 
 	GameController.Loaded:Connect(function(bool)
 		self.serverLoaded = bool
+		self._serverLoad:Fire() 
 	end)
 
 	RoundService.CountdownChanged:Connect(function(object, count)

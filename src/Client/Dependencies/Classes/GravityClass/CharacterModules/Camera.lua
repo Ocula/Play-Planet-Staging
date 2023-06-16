@@ -14,6 +14,9 @@ function CameraClass.new(controller)
 
 	self.Controller = controller
 	self.CameraModule = playerModule:GetCameras()
+	self.CameraInput = self.CameraModule:GetCameraInput()
+
+	warn("Camera:", self, self.CameraModule) 
   
 	init(self)
 

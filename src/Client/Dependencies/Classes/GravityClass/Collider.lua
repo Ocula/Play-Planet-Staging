@@ -25,7 +25,7 @@ function ColliderClass.new(controller)
 
 	self.Model = Instance.new("Model")
 
-	local sphere, vForce, floor, floor2, gyro, gyroatt0, gyroatt1 = create(self, controller)
+	local sphere, vForce, floor, floor2, gyro, gyroatt0 = create(self, controller)
 
 	self._maid = Maid.new()
 	
@@ -38,7 +38,6 @@ function ColliderClass.new(controller)
 	self.Gyro = gyro 
 
 	self.GyroAtt0 = gyroatt0 
-	self.GyroAtt1 = gyroatt1 
 
 	init(self)
 
@@ -122,24 +121,15 @@ function create(self, controller)
 	attachmentBlock.Size = Vector3.new(1,1,1) 
 
 	local gyroAttachment0 = Instance.new("Attachment") 
-	gyroAttachment0.Parent = controller.HRP 
+	gyroAttachment0.Parent = controller.HRP
 	gyroAttachment0.Name = "Align"
-
-	local gyroAttachment1 = Instance.new("Attachment") 
-	gyroAttachment1.Parent = attachmentBlock 
-	gyroAttachment1.Name = "Align2"
+	gyroAttachment0.Visible = true 
 
 	local gyro = Instance.new("AlignOrientation")
 	gyro.Parent = controller.HRP 
 	gyro.Attachment0 = gyroAttachment0
-	gyro.Attachment1 = gyroAttachment1
 	gyro.RigidityEnabled = true 
-
-	--[[
-	gyro.P = 25000
-	gyro.MaxTorque = Vector3.new(100000, 100000, 100000)
-	gyro.CFrame = controller.HRP.CFrame
-	gyro.Parent = controller.HRP--]]
+	gyro.Mode = Enum.OrientationAlignmentMode.OneAttachment
 
 	floor.Touched:Connect(function() end)
 	floor2.Touched:Connect(function() end)
@@ -148,7 +138,7 @@ function create(self, controller)
 	floor.Parent = self.Model
 	floor2.Parent = self.Model
 
-	return sphere, vForce, floor, floor2, gyro, gyroAttachment0, gyroAttachment1
+	return sphere, vForce, floor, floor2, gyro, gyroAttachment0
 end
 
 function init(self)
@@ -157,20 +147,31 @@ function init(self)
 	self._maid:GiveTask(self.FloorDetector)
 	self._maid:GiveTask(self.Gyro)
 	self._maid:GiveTask(self.GyroAtt0)
-	self._maid:GiveTask(self.GyroAtt1) 
 
 	self.Model.Name = "Collider"
 	self.Model.Parent = self.Controller.Character
 end
 
+--[[
+
+game:GetService("RunService").Stepped:Connect(function() 
+	local ori1 = game.Selection:Get()[1].Orientation 
+	local ori2 = game.Selection:Get()[2].Orientation  
+	if ori1 ~= ori2 then 
+		print(ori1, ori2) 
+		print(ori2 - ori1) 
+	end 
+end)
+
+]]
+
 -- Public Methods
 
 function ColliderClass:Update(force, cframe)
-	local x,y,z = cframe:ToOrientation() 
-	local orientation = Vector3.new(math.deg(x), math.deg(y), math.deg(z)) 
-
 	self.VForce.Force = force
-	self.GyroAtt1.Orientation = orientation 
+	self.Gyro.CFrame = cframe
+
+	--print(orientation) 
 end
 
 function ColliderClass:IsGrounded(isJumpCheck)

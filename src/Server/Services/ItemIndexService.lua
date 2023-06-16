@@ -221,12 +221,10 @@ function retrieveNamespacedInternal(index, itemIndex)
 
 	-- Check to make sure the index exists!
 	local object = index
-	warn("checking:", object)
 	for _, v in ipairs(arrayList) do
 		--Go down a level if we can
 		object = object[v]
-		warn("checking [2]:", object)
-
+		
 		--Exit if we ever hit a nil pointer
 		if (object == nil) then 
 			--warn("Item type " .. itemIndex .. " is invalid!")

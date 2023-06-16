@@ -25,6 +25,8 @@ local _counter = 0
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
+local Quaternion = require(ReplicatedStorage.Shared:WaitForChild("Quaternion"))
+
 local GravityClient 
 
 -- Class
@@ -73,35 +75,38 @@ function GravityControllerClass.new(player)
 end
 
 -- Debug
+local draw = require(ReplicatedStorage.Shared.Octree.Draw) 
+local baseRay = Ray.new(Vector3.new(0,0,0), Vector3.new(0,1,0))
 
-function updateDebugVector(rotate) 
-	if rotate then 
-		return -- turn this off for now 
-	end 
-	
+local rightPart = draw.ray(baseRay, Color3.new(1,0,0))
+local upPart = draw.ray(baseRay, Color3.new(0,1,0))
+local lookPart = draw.ray(baseRay, Color3.new(0,0,1))
+
+local debugCam = Instance.new("Camera") 
+
+function updateDebugVector(right, up, look) 
 	local plr = game.Players.LocalPlayer 
-	local deb = plr.PlayerGui:WaitForChild("Debug")
+	local pgui = plr:WaitForChild("PlayerGui")
+	local deb = pgui:WaitForChild("Debug")	
+	local vectorFrame = deb:WaitForChild("Vector") 
 
-	local vec = deb.Vector
-	local vFrame = vec.ViewportFrame
-	local world = vFrame.WorldModel
-	local part = world.CharacterRotate 
+	local vFrame = vectorFrame:WaitForChild("ViewportFrame")
+	local wModel = vFrame:WaitForChild("WorldModel") 
 
-	local cam = world:FindFirstChild("Camera")
+	local hrp = plr.Character:WaitForChild("HumanoidRootPart")
 
-	if not cam then 
-		cam = Instance.new("Camera")
-		cam.Parent = world 
-		vFrame.CurrentCamera = cam 
-	end 
+	rightPart.Parent = wModel
+	upPart.Parent = wModel 
+	lookPart.Parent = wModel 
 
-	part:SetPrimaryPartCFrame(CFrame.new() * rotate) 
+	debugCam.Parent = wModel 
+	vFrame.CurrentCamera = debugCam 
 
-	local x,y,z = workspace.CurrentCamera.CFrame:ToOrientation()
-	local setCF = part.PrimaryPart.CFrame * CFrame.Angles(x,y,z)
-	local setP = setCF * CFrame.new(0,0,-10) 
+	debugCam.CFrame = CFrame.new(hrp.Position - Vector3.new(0,0,10), hrp.Position) 
 
-	cam.CFrame = CFrame.new(setP.p, part.PrimaryPart.Position)  
+	draw.updateRay(lookPart, Ray.new(hrp.Position, look)) 
+	draw.updateRay(rightPart, Ray.new(hrp.Position, right)) 
+	draw.updateRay(upPart, Ray.new(hrp.Position, up)) 
 end 
 
 -- Private Methods
@@ -150,23 +155,48 @@ local function onHeartbeat(self, dt)
 	self._prevCFrame = standingPart and standingPart.CFrame
 end
 
-local function orthogonalizeCameraLookVector(lookVector, upVector)
-    lookVector = lookVector.Unit
-    upVector = upVector.Unit
-    
-    local dotProduct = lookVector:Dot(upVector)
-    local projectionVector = dotProduct * upVector
-    local orthogonalizedLookVector = lookVector - projectionVector
-    
-    return orthogonalizedLookVector.Unit
+-- What we can do is translate the camCF to a UNIT vector
+-- Then translate it back to our abritrary vector. 
+local rightPlaneRay = draw.ray(Ray.new(Vector3.new(), Vector3.new(1,0,0)), Color3.new(1,0,0), workspace, 1)
+local forwardPlaneRay = draw.ray(Ray.new(Vector3.new(), Vector3.new(0,0,1)), Color3.new(0,0,1), workspace, 1)
+local upPlaneRay = draw.ray(Ray.new(Vector3.new(), Vector3.new(0,1,0)), Color3.new(0,1,0), workspace, 1)
+
+
+local function calculateCharRotation(lookVector, charUpVector) 
+	local rightPlane = lookVector:Cross(charUpVector).Unit
+	local forward = rightPlane:Cross(charUpVector).Unit
+	
+	return rightPlane, forward
 end
 
-local testpart = Instance.new("Part")
-testpart.Parent = workspace
-testpart.Anchored = true 
-testpart.Transparency = 0.3
-testpart.Size = Vector3.new(1,1,3)
-testpart.CFrame = CFrame.new(0,100,0) 
+-- Helper function to normalize a vector
+function normalizeVector(vector)
+    local magnitude = math.sqrt(vector.X^2 + vector.Y^2 + vector.Z^2)
+    return Vector3.new(vector.X / magnitude, vector.Y / magnitude, vector.Z / magnitude)
+end
+
+-- Helper function to calculate the dot product of two vectors
+function dotProduct(vector1, vector2)
+    return vector1.X * vector2.X + vector1.Y * vector2.Y + vector1.Z * vector2.Z
+end
+
+function getAngleBetweenLookVectors(lookVector1, lookVector2)
+    -- Normalize the LookVectors
+    lookVector1 = normalizeVector(lookVector1)
+    lookVector2 = normalizeVector(lookVector2)
+    
+    -- Calculate the dot product
+    local dP = dotProduct(lookVector1, lookVector2)
+    
+    -- Calculate the angle in radians
+    local angleRadians = math.acos(dP)
+    
+    -- Convert radians to degrees
+    local angleDegrees = math.deg(angleRadians)
+    
+    return angleDegrees
+end
+
 
 local function onGravityStep(self, dt)
 	--local camCF = workspace.CurrentCamera.CFrame
@@ -188,11 +218,11 @@ local function onGravityStep(self, dt)
 
 	local cForward = math.abs(fDot) > 0.5 and math.sign(fDot) * camCF.YVector or -camCF.ZVector
 
-
 	local left = -cForward:Cross(newGravity).Unit
 	local forward = -left:Cross(newGravity).Unit
 
 	local move = self._control:GetMoveVector()
+
 	local worldMove = (forward * move.z) - (left * move.x)
 	  
 	local isInputMoving = false
@@ -207,49 +237,42 @@ local function onGravityStep(self, dt)
 
 	-- get the desired character cframe
 	local hrpLook = self.HRP.CFrame.LookVector
-	local charForward = hrpLook:Dot(forward)*forward + hrpLook:Dot(left)*left
+	local charForward = hrpLook:Dot(forward) * forward + hrpLook:Dot(left)*left
 	local charRight = charForward:Cross(newGravity).Unit
 
+	local newCharCF = CFrame.new() 
 	local newCharRotation = CFrame.new()
-	local newCharCF = CFrame.fromMatrix(ZERO3, charRight, newGravity, -charForward)
 
 	-- Get our newCharRotation. We will multiply this by newCharCF so we should be able to calculate a Unit direction...
 	if self._camera.CameraModule:IsCamRelative() then
-		-- Camera Look Vector
+		local newRight, newForward = calculateCharRotation(camCF.LookVector, newGravity) 
 
-		local camYaw = math.rad(self._camera.CameraModule:GetPitchYaw().Y)
-		local mouseLockOffset = Vector3.new()
-		local activeCam = self._camera.CameraModule.activeCameraController
+		--worldMove = (newForward * move.z) - (-newRight * move.x) 
 
-		if activeCam then 
-			mouseLockOffset = activeCam:GetMouseLockOffset()
-		end 
+		draw.updateRay(rightPlaneRay, Ray.new(self.HRP.Position, newRight * 20))
+		draw.updateRay(forwardPlaneRay, Ray.new(self.HRP.Position, -newForward * 20))
+		draw.updateRay(upPlaneRay, Ray.new(self.HRP.Position, newGravity * 20))--]]
 
-		-- newGravity is our up vector. We construct a rotation around this up vector based on the camera's yaw.
-		-- newCharRotation = CFrame.fromAxisAngle(newGravity, camYaw)
-		newCharCF = CFrame.fromMatrix(mouseLockOffset, charRight, newGravity)
+		-- check how far
 
-		local pos = (self.HRP.CFrame * CFrame.new(0,5,0)).p
-		local testdir = pos + (charForward) 
-		testpart.CFrame = CFrame.new(pos, testdir)
 
-		if not self._lastCharRotation or self._lastCharRotation ~= newCharRotation then 
-			self._lastCharRotation = newCharRotation 
+		newCharCF = CFrame.fromMatrix(ZERO3, newRight, newGravity, -newForward) 
 
-			print("Yaw", camYaw) 
-			print("Rotation:", newCharRotation)
-			print("NewGravity:", newGravity)
-		end --]]
+		--self.HRP.CFrame = CFrame.new(self.HRP.Position) * CFrame.fromMatrix(ZERO3, newRight, newGravity, -newForward) 
+		--newCharRotation = 
 	elseif isInputMoving then
-		--warn("rotating") 
 		newCharRotation = newCharRotation:Lerp(getRotationBetween(
 			charForward,
 			worldMove,
 			newGravity
-		), .7)
+		), .7)--]]
 	end
 
-	updateDebugVector(newCharRotation) 
+	if not self._camera.CameraModule:IsCamRelative() then 
+		newCharCF = CFrame.fromMatrix(ZERO3, charRight, newGravity, -charForward)
+	end
+
+	updateDebugVector(charRight, newGravity, -forward) 
 
 	-- calculate forces
 	local g = workspace.Gravity
@@ -257,7 +280,7 @@ local function onGravityStep(self, dt)
 
 	local cVelocity = self.HRP.Velocity
 	local tVelocity = self.Humanoid.WalkSpeed * worldMove
-	local gVelocity = cVelocity:Dot(newGravity)*newGravity
+	local gVelocity = cVelocity:Dot(newGravity) * newGravity
 	local hVelocity = cVelocity - gVelocity
 
 	if hVelocity:Dot(hVelocity) < 1 then
@@ -306,7 +329,7 @@ function init(self)
 		onHeartbeat(self, dt)
 	end))
 
-	RunService:BindToRenderStep("GravityStep", Enum.RenderPriority.Character.Value - 1, function(dt)
+	RunService:BindToRenderStep("GravityStep", Enum.RenderPriority.Camera.Value - 1, function(dt)
 		onGravityStep(self, dt)
 	end)
 

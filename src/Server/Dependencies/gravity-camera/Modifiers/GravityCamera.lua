@@ -113,7 +113,10 @@ return function(PlayerModule)
             self._pitchYaw = basePitchYaw 
         end 
 
-        local pitch, yaw = self._pitchYaw.X, self._pitchYaw.Y 
+        local pitch, yaw = self._pitchYaw.X, self._pitchYaw.Y
+
+		--yaw = math.rad(90) 
+
         local yTheta, zTheta = math.rad(yaw), math.rad(pitch) 
 
         local lookVector = CFrame.Angles(0,yTheta,0) * CFrame.Angles(zTheta, 0, 0) * upCFrame.YVector
@@ -125,7 +128,7 @@ return function(PlayerModule)
 		return self._pitchYaw 
 	end 
 
-    function baseCamera:UpdatePitchYaw(rotateInput: Vector2)
+    function baseCamera:UpdatePitchYaw(rotateInput: Vector2, cameraRelative: bool): Vector2
         local updatedPY = self._pitchYaw + rotateInput 
 
         local newPY = Vector2.new(math.clamp(updatedPY.X, -((math.pi*2) - EPSILON) , 
@@ -148,6 +151,11 @@ return function(PlayerModule)
 		end
 
         self._pitchYaw = newPY 
+
+		--test
+		--[[if self.inFirstPerson or self:GetIsMouseLocked() then 
+			self._pitchYaw = Vector2.new(newPY.X, basePitchYaw.Y)
+		end--]]
 
         return self._pitchYaw 
     end 
@@ -190,6 +198,10 @@ return function(PlayerModule)
 		return upVector
 	end
 
+	function cameraObject:GetCameraInput()
+		return cameraInput
+	end 
+
 	function cameraObject:GetTargetUpVector(): Vector3
 		return targetUpVector
 	end
@@ -215,7 +227,7 @@ return function(PlayerModule)
 	end
 	
 	function cameraObject:GetCameraCFrame()
-		if self.activeCameraController then 
+		if self.activeCameraController then
 			return self._cameraCFrame or CFrame.new() 
 		end 
 	end 
@@ -278,9 +290,9 @@ return function(PlayerModule)
 			newCameraFocus = fixedCameraFocus + adjustedLockOffset
 			newCameraCFrame = newCameraFocus * camRotation
 	
-			if self.activeOcclusionModule then
-				newCameraCFrame, newCameraFocus = self.activeOcclusionModule:Update(dt, newCameraCFrame, newCameraFocus)
-			end
+			--if self.activeOcclusionModule then
+			--	newCameraCFrame, newCameraFocus = self.activeOcclusionModule:Update(dt, newCameraCFrame, newCameraFocus)
+			--end
 	
 			-- Here is where the new CFrame and Focus are set for this render frame
 			local currentCamera = game.Workspace.CurrentCamera :: Camera

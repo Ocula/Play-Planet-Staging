@@ -7,7 +7,10 @@ local AssetLibrary = require(Knit.Library.AssetLibrary)
 
 local SoundService = Knit.CreateService({
 	Name = "SoundService",
-	Client = {},
+	Client = {
+		SkipSound = Knit.CreateSignal(), 
+		StopSound = Knit.CreateSignal(), 
+	},
 })
 
 function SoundService:Play(soundId)
@@ -27,6 +30,8 @@ function SoundService:KnitStart()
 	end
 end
 
-function SoundService:KnitInit() end
+function SoundService:KnitInit() 
+
+end
 
 return SoundService
