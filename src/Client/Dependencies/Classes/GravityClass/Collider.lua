@@ -171,7 +171,7 @@ function ColliderClass:Update(force, cframe)
 	self.VForce.Force = force
 	self.Gyro.CFrame = cframe
 
-	--print(orientation) 
+	--print("Output", self.Gyro.CFrame)
 end
 
 function ColliderClass:IsGrounded(isJumpCheck)

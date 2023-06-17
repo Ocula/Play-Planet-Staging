@@ -69,6 +69,7 @@ end
 
 function GravityController.GetGravityUp(self)
 	local Field = GravityController.Field
+	
 	assert(Field, "No Field has been set.")
 
 	local GravityService = Knit.GetService("GravityService") 
@@ -76,7 +77,9 @@ function GravityController.GetGravityUp(self)
 
 	if Field.UpVector then
 		local desiredUpVector = Field.UpVector * Field.UpVectorMultiplier
+
 		Camera:SetTargetUpVector(desiredUpVector) 
+
 		return desiredUpVector
 	end
 

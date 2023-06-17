@@ -97,6 +97,8 @@ return function(PlayerModule)
 	local baseCamera = require(PlayerModule.CameraModule.BaseCamera)
     local basePitchYaw = Vector2.new(math.pi/2,math.rad(90))
 
+	baseCamera.cache = {} 
+
     local EPSILON = 1e-6 
 
 	local max_y = math.rad(80)
@@ -129,7 +131,7 @@ return function(PlayerModule)
 	end 
 
     function baseCamera:UpdatePitchYaw(rotateInput: Vector2, cameraRelative: bool): Vector2
-        local updatedPY = self._pitchYaw + rotateInput 
+        local updatedPY = self._pitchYaw + rotateInput or Vector2.new()
 
         local newPY = Vector2.new(math.clamp(updatedPY.X, -((math.pi*2) - EPSILON) , 
                     ((math.pi*2) + EPSILON)), math.clamp(updatedPY.Y, 0.2, math.rad(180)-EPSILON))
@@ -177,6 +179,8 @@ return function(PlayerModule)
 		local constrainedRotateInput = Vector2.new(pitchYaw.X, yTheta)
 		local startCFrame = CFrame.new(Vector3.zero, currLookVector)
 		local newLookCFrame = CFrame.Angles(0, -constrainedRotateInput.X, 0) * startCFrame * CFrame.Angles(-constrainedRotateInput.Y,0,0)
+
+		self.cache.lookCFrame = newLookCFrame 
 
 		return newLookCFrame
 	end
@@ -229,6 +233,12 @@ return function(PlayerModule)
 	function cameraObject:GetCameraCFrame()
 		if self.activeCameraController then
 			return self._cameraCFrame or CFrame.new() 
+		end 
+	end 
+
+	function cameraObject:GetCameraLookVector()
+		if self.activeCameraController then
+			return self.activeCameraController.cache.lookCFrame.LookVector 
 		end 
 	end 
 

@@ -161,42 +161,49 @@ local rightPlaneRay = draw.ray(Ray.new(Vector3.new(), Vector3.new(1,0,0)), Color
 local forwardPlaneRay = draw.ray(Ray.new(Vector3.new(), Vector3.new(0,0,1)), Color3.new(0,0,1), workspace, 1)
 local upPlaneRay = draw.ray(Ray.new(Vector3.new(), Vector3.new(0,1,0)), Color3.new(0,1,0), workspace, 1)
 
+local testPart = Instance.new("Part", workspace)
+testPart.Size = Vector3.new(3,5,3) 
+testPart.Anchored = true 
 
-local function calculateCharRotation(lookVector, charUpVector) 
-	local rightPlane = lookVector:Cross(charUpVector).Unit
-	local forward = rightPlane:Cross(charUpVector).Unit
-	
-	return rightPlane, forward
-end
+local alignatt = Instance.new("Attachment")
+alignatt.Parent = testPart 
 
--- Helper function to normalize a vector
-function normalizeVector(vector)
-    local magnitude = math.sqrt(vector.X^2 + vector.Y^2 + vector.Z^2)
-    return Vector3.new(vector.X / magnitude, vector.Y / magnitude, vector.Z / magnitude)
-end
+local alignor = Instance.new("AlignOrientation")
+alignor.Parent = testPart 
+alignor.Attachment0 = alignatt 
+alignor.RigidityEnabled = true 
+alignor.Mode = Enum.OrientationAlignmentMode.OneAttachment
 
--- Helper function to calculate the dot product of two vectors
-function dotProduct(vector1, vector2)
-    return vector1.X * vector2.X + vector1.Y * vector2.Y + vector1.Z * vector2.Z
-end
+local alignpos = Instance.new("AlignPosition")
+alignpos.Parent = testPart 
+alignpos.Attachment0 = alignatt 
+alignpos.RigidityEnabled = true 
+alignpos.Mode = Enum.PositionAlignmentMode.OneAttachment
 
-function getAngleBetweenLookVectors(lookVector1, lookVector2)
-    -- Normalize the LookVectors
-    lookVector1 = normalizeVector(lookVector1)
-    lookVector2 = normalizeVector(lookVector2)
-    
-    -- Calculate the dot product
-    local dP = dotProduct(lookVector1, lookVector2)
-    
-    -- Calculate the angle in radians
-    local angleRadians = math.acos(dP)
-    
-    -- Convert radians to degrees
-    local angleDegrees = math.deg(angleRadians)
-    
-    return angleDegrees
-end
+function getCharRotation(look, up)
+	local rightVector = look:Cross(up).Unit 
+	local forward = rightVector:Cross(up).Unit 
 
+	return rightVector, forward 
+end 
+
+function getLookVector(pitch, yaw, up) 
+	-- Convert pitch and yaw to radians
+	pitch = math.rad(pitch)
+	yaw = math.rad(yaw)
+
+	-- Calculate the LookVector
+	local x = math.cos(pitch) * math.sin(yaw)
+	local y = math.sin(pitch)
+	local z = math.cos(pitch) * math.cos(yaw)
+	local lookVector = Vector3.new(x, y, z)
+
+	-- Rotate the LookVector to be relative to the UpVector
+	local rightVector = lookVector:Cross(up).Unit
+	lookVector = up:Cross(rightVector).Unit
+
+	return lookVector 
+end 
 
 local function onGravityStep(self, dt)
 	--local camCF = workspace.CurrentCamera.CFrame
@@ -240,27 +247,50 @@ local function onGravityStep(self, dt)
 	local charForward = hrpLook:Dot(forward) * forward + hrpLook:Dot(left)*left
 	local charRight = charForward:Cross(newGravity).Unit
 
-	local newCharCF = CFrame.new() 
+	local newCharCF = CFrame.fromMatrix(ZERO3, charRight, newGravity, -charForward)
 	local newCharRotation = CFrame.new()
 
+	-- TODO: #1 FIX. THE. FUCKING. FIRST PERSON CAMERA. 
+		-- I HAVE TRIED LIteRALLTY ASEWFJANF EVERYYYYthING HERE. LOOK: 
+			-- Build the Camera's Look Vector using pitch, yaw, upvector.
+				-- I had a hunch that because we were calculating new orientation based on the look vector, it was getting
+				-- stuck in a loop because of slight margins of error. 
+			-- Treating player's HRP CFrame as a planar surface and projecting look vector off of that to get a fixed forward vector.
+			-- Changed from BodyGyro to AlignOrientation
+			-- Edited GravityForce (gForce) thinking that it was the problem. It was not. 
+			-- Quaternion route - building the rotation via quaternions to ensure accuracy
+			-- Rotating by the angle between current HRP LookVector and desired HRP LookVector 
+			-- Using an equator formula where we project down from the Camera position to the "equator" (the HRP CFrame) and projecting inwards.
+			-- Fixing WorldMove... which was, in fact, not the move. (It didn't need fixing)
+			-- Expensively calculating and recalculating Camera Look Vector.
+			-- Bashing my head into a wall.
+			-- Asking ChatGPT. Would not recommend.
+		
 	-- Get our newCharRotation. We will multiply this by newCharCF so we should be able to calculate a Unit direction...
-	if self._camera.CameraModule:IsCamRelative() then
-		local newRight, newForward = calculateCharRotation(camCF.LookVector, newGravity) 
+	--[[if self._camera.CameraModule:IsCamRelative() then
+		--local lookVector = self._camera.CameraModule:GetCameraLookVector()
+		--local newRight, newForward = getCharRotation(lookVector, newGravity)  
 
 		--worldMove = (newForward * move.z) - (-newRight * move.x) 
 
-		draw.updateRay(rightPlaneRay, Ray.new(self.HRP.Position, newRight * 20))
-		draw.updateRay(forwardPlaneRay, Ray.new(self.HRP.Position, -newForward * 20))
-		draw.updateRay(upPlaneRay, Ray.new(self.HRP.Position, newGravity * 20))--]]
+		--draw.updateRay(rightPlaneRay, Ray.new(self.HRP.Position, newRight * 20))
+		--draw.updateRay(forwardPlaneRay, Ray.new(self.HRP.Position, -newForward * 20))
+		--draw.updateRay(upPlaneRay, Ray.new(self.HRP.Position, newGravity * 20))--]]
 
+		--[[newCharRotation = newCharRotation:Lerp(getRotationBetween(
+			charForward,
+			worldMove,
+			newGravity
+		), .7)--]]
 		-- check how far
 
+		--newCharCF = CFrame.fromMatrix(Vector3.new(), newRight, newGravity, -newForward)
 
-		newCharCF = CFrame.fromMatrix(ZERO3, newRight, newGravity, -newForward) 
+--		warn("New RIGHT:", newRight) 
 
 		--self.HRP.CFrame = CFrame.new(self.HRP.Position) * CFrame.fromMatrix(ZERO3, newRight, newGravity, -newForward) 
 		--newCharRotation = 
-	elseif isInputMoving then
+	if isInputMoving then
 		newCharRotation = newCharRotation:Lerp(getRotationBetween(
 			charForward,
 			worldMove,
@@ -268,11 +298,7 @@ local function onGravityStep(self, dt)
 		), .7)--]]
 	end
 
-	if not self._camera.CameraModule:IsCamRelative() then 
-		newCharCF = CFrame.fromMatrix(ZERO3, charRight, newGravity, -charForward)
-	end
-
-	updateDebugVector(charRight, newGravity, -forward) 
+	--updateDebugVector(charRight, newGravity, -forward) 
 
 	-- calculate forces
 	local g = workspace.Gravity
@@ -291,7 +317,9 @@ local function onGravityStep(self, dt)
 	local dVelocityM = dVelocity.Magnitude
 
 	local walkForceM = math.min(10000, WALK_FORCE * self._characterMass * dVelocityM / (dt*60))
-	local walkForce = walkForceM > 0 and (dVelocity / dVelocityM)*walkForceM or ZERO3
+	local walkForce = walkForceM > 0 and (dVelocity / dVelocityM) * walkForceM or ZERO3
+
+	--warn("WALKFORCE:", walkForce)
 
 	local charRotation = newCharRotation * newCharCF
 
@@ -329,7 +357,7 @@ function init(self)
 		onHeartbeat(self, dt)
 	end))
 
-	RunService:BindToRenderStep("GravityStep", Enum.RenderPriority.Camera.Value - 1, function(dt)
+	RunService:BindToRenderStep("GravityStep", Enum.RenderPriority.Camera.Value + 1, function(dt)
 		onGravityStep(self, dt)
 	end)
 
