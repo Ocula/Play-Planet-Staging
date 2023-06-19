@@ -44,7 +44,7 @@ function MapService:KnitInit()
 		slotIndex += 1
 	end
 
-	print(slotIndex, "Map Slots created", self.Slots)
+	--print(slotIndex, "Map Slots created", self.Slots)
 end
 
 return MapService

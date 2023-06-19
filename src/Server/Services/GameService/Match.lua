@@ -4,6 +4,8 @@
     Jan 11, 2022
 
     Handles all Match logic.
+
+	Matches are for 4-8 players that want to play match-style. 
 --]=]
 
 -- Services
