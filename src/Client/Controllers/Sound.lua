@@ -41,6 +41,7 @@ end
 
 function Sound:KnitStart()
 
+    --[[
     game:GetService("RunService").Heartbeat:Connect(function(dt)
         for sound, tree in pairs(self.Trees) do
 
@@ -70,7 +71,8 @@ function Sound:KnitStart()
             
             object:UpdateTimePosition(object.spliceTrim.X) 
         end) 
-    end)
+    end)--]]
+    
 end 
 
 function Sound:KnitInit()

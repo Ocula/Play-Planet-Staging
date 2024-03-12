@@ -76,6 +76,7 @@ function Interface:Load()
 		local _overTime = false
 		local _currentTime = os.time()
 
+		--[[
 		local sound = Knit.GetController("Sound") 
 		local themeSong = sound.Trees["stems:balderdash"] 
 
@@ -87,7 +88,7 @@ function Interface:Load()
 
 		self._serverLoad:Wait()
 
-		_themeSongConnection:Disconnect() 
+		_themeSongConnection:Disconnect() --]]
 
 		--[[
 		repeat

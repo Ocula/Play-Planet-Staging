@@ -208,7 +208,7 @@ end
 local function onGravityStep(self, dt)
 	--local camCF = workspace.CurrentCamera.CFrame
 	local camCF = self._camera.CameraModule:GetCameraCFrame() -- We'll manually acquire this to avoid any discrepancies.
-
+	
 	-- update the gravity vector
 	local oldGravity = self._gravityUp
 	local newGravity = self:GetGravityUp(oldGravity)
@@ -383,6 +383,10 @@ end
 function GravityControllerClass:GetGravityUp(oldGravity)
 	return oldGravity
 end
+
+function GravityControllerClass:GetMoveVector()
+	return self._control:GetMoveVector()
+end 
 
 function GravityControllerClass:Destroy()
 	warn("Cleaning") 

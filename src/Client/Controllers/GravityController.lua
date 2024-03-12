@@ -130,7 +130,7 @@ function GravityController:KnitStart()
 
 	self:SetCamera() 
 
-	GravityFieldBinder:Start() 
+	GravityFieldBinder:Start() --]]
 end
 
 function GravityController:KnitInit()

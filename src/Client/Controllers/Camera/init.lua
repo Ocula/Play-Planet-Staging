@@ -75,6 +75,27 @@ function Camera:KnitStart()
 		self:SetState(...)
 	end)
 
+	local CameraObject = workspace.CurrentCamera 
+	CameraObject.CameraType = "Scriptable"
+
+	local Player = game.Players.LocalPlayer 
+	local playerModule = require(Player.PlayerScripts:WaitForChild("PlayerModule"))
+	local Control = playerModule:GetControls()
+
+	game:GetService("RunService").RenderStepped:Connect(function()
+		local Character = Player.Character 
+
+		if Character then 
+			local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+
+			if HumanoidRootPart then 
+				CameraObject.CFrame = CFrame.new(HumanoidRootPart.Position + Vector3.new(50,0,0), HumanoidRootPart.Position)
+
+				warn(Control:GetMoveVector())
+			end 
+		end 
+	end)
+
 	--
 
 	--[[ Test for Rebinding / Binding Camera Render. 

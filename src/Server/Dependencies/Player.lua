@@ -81,7 +81,9 @@ function Player.new(_player, _profile)
 		},
 
 		-- Dummy Humanoid for Caching Values
-		Humanoid = {},
+		Humanoid = {
+			WalkSpeed = 24, 
+		},
 
 		-- Signals
 		PropertyChangedSignal = Signal.new(),
