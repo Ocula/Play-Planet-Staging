@@ -68,7 +68,7 @@ end
 
 function Camera:KnitStart()
 
-	local CameraStackController = Knit.GetController("CameraStackController")
+	--local CameraStackController = Knit.GetController("CameraStackController")
 	local GameService = Knit.GetService("GameService")
 
 	GameService.SetCameraState:Connect(function(...)
@@ -82,7 +82,7 @@ function Camera:KnitStart()
 	local playerModule = require(Player.PlayerScripts:WaitForChild("PlayerModule"))
 	local Control = playerModule:GetControls()
 
-	game:GetService("RunService").RenderStepped:Connect(function()
+	--[[game:GetService("RunService").RenderStepped:Connect(function()
 		local Character = Player.Character 
 
 		if Character then 
@@ -94,7 +94,7 @@ function Camera:KnitStart()
 				warn(Control:GetMoveVector())
 			end 
 		end 
-	end)
+	end)--]]
 
 	--
 

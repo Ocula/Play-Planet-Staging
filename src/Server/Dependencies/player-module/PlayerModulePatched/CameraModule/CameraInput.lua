@@ -122,7 +122,8 @@ local function isInDynamicThumbstickArea(pos: Vector3): boolean
 end
 
 local worldDt = 1/60
-RunService.Stepped:Connect(function(_, _worldDt)
+
+RunService.Stepped:Connect(function(dt, _worldDt)
 	worldDt = _worldDt
 end)
 

@@ -100,6 +100,8 @@ end
 -- Package Gravity Field for client usage. 
 function GravityField:Package()
     local _package = {
+        Object = self.Object, 
+
         GUID = self.GUID, 
         -- Coordinates
         Center = self.Object.CFrame,
@@ -187,30 +189,28 @@ end
 
 function GravityField:isPlayerIn(player)
     -- Overlap Check for Player!
-    local humRoot = player:GetHumanoidRootPart()
+    local humRoot = player:GetColliderRootPart() or player:GetHumanoidRootPart()
 
     if humRoot then 
         return self.Field:Check(humRoot) 
     end 
 end 
 
+function GravityField:GetNormal(Position: Vector3)
+    --[[if self.UpVector then 
+        return self.UpVector * self.UpVectorMultiplier 
+    end--]]
+
+    local Shapecast = require(Knit.Library.Shapecast) 
+    local UpVector = self:GetUpVector(Position) 
+
+    return Shapecast.cast("Sphere", Position, Vector3.new(2,2,2), -UpVector * 6) 
+end
+
 --[[
 
 This can happen on the client for more accurate UpVector positioning. 
-
-function GravityField:GetGravityUp(Request: any?)
-    if self.UpVector then 
-        return self.UpVector * self.UpVectorMultiplier 
-    end
-
-    local Shapecast = require(Knit.Library.Shapecast) 
-
-    if Request:IsA("BasePart") then
-        -- ShapeCast
-        return Shapecast.gravityUp(Request.Position, self:GetUpVector())
-    elseif Request:IsA("Vector3") then 
-    end 
-end --]]
+ --]]
 
 function GravityField:Destroy()
     self._maid:DoCleaning() 

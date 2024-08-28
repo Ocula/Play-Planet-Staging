@@ -28,6 +28,7 @@ local GravityController = Knit.CreateController {
 
     State = "Normal",
     Field = nil,
+	Fields = {},
 	Controller = nil,
 
 	_controllerMaid = Maid.new(),
@@ -53,13 +54,22 @@ end
 -- Public Methods 
 function GravityController:SetState(State) 
 	if State == "GravityField" then 
-		if not self.Controller then 
+		if not self.Controller and not self._creatingController then
 			local Player = game.Players.LocalPlayer 
 
+			self._creatingController = true 
 			self.Controller = ControllerModule.new(Player)
-			self.Controller.GetGravityUp = self.GetGravityUp
+			self.Controller.GetGravityUp = function()
+				return self:GetGravityUp()
+			end 
 
 			self._controllerMaid:GiveTask(self.Controller) 
+
+			self._creatingController = nil 
+
+			self:SetCamera()
+
+			warn("CREATED CONTROLLER!") 
 		end 
 	else 
 		self._controllerMaid:DoCleaning()
@@ -67,36 +77,39 @@ function GravityController:SetState(State)
 	end
 end
 
-function GravityController.GetGravityUp(self)
-	local Field = GravityController.Field
+function GravityController:GetNormalAtPosition(Position: Vector3)
+	local Field = self.Field
+
+	assert(Field, "No field has been set!") 
+
+	local FieldClass = self.Fields[Field]
+
+	return FieldClass:GetNormal(Position)
+end 
+
+function GravityController:GetGravityUp()
+	local Field = self.Field
 	
 	assert(Field, "No Field has been set.")
 
-	local GravityService = Knit.GetService("GravityService") 
-	local Camera = GravityController:GetCamera() 
+	local Camera = self:GetCamera() 
 
-	if Field.UpVector then
-		local desiredUpVector = Field.UpVector * Field.UpVectorMultiplier
+	local FieldClass = self.Fields[Field] 
+
+	if FieldClass.UpVector then
+		local desiredUpVector = FieldClass.UpVector * FieldClass.UpVectorMultiplier
 
 		Camera:SetTargetUpVector(desiredUpVector) 
 
 		return desiredUpVector
+	else
+		local getGravityUp = FieldClass:GetUpVector(self.Controller:GetPosition())
+		--local setUpVector = FieldClass:GetNormal(self.Controller:GetPosition())
+
+		Camera:SetTargetUpVector(getGravityUp)
+
+		return getGravityUp 
 	end
-
-	local _setUpVector = self._lastUpVector
-	
-	GravityService:RequestUpVector(Field.GUID):andThen(function(upVector)
-		if upVector then 
-			_setUpVector = upVector
-			self._lastUpVector = upVector
-		end 
-	end)
-
-	if _setUpVector then 
-		Camera:SetTargetUpVector(_setUpVector) 
-	end 
-
-	return _setUpVector 
 end
 
 
@@ -109,7 +122,15 @@ function GravityController:KnitStart()
 	end)
 
 	GravityService.SetField:Connect(function(Field)
-		self.Field = Field
+		self.Field = Field.GUID 
+
+		if not self.Fields[Field.GUID] then 
+			local GravityField = require(Knit.Modules.Classes.GravityField).new(Field) 
+
+			self.Fields[Field.GUID] = GravityField 
+
+			warn("Created field:", GravityField) 
+		end 
 
 		if Field.State ~= self.State then 
 			self:SetState(Field.State) 
@@ -125,12 +146,8 @@ function GravityController:KnitStart()
 	end) 
 
 	---------
-    local GravityField = require(Knit.Modules.Classes.GravityField)
-	local GravityFieldBinder = Binder.new("GravityZone", GravityField) 
 
-	self:SetCamera() 
-
-	GravityFieldBinder:Start() --]]
+	--GravityFieldBinder:Start() --]]
 end
 
 function GravityController:KnitInit()

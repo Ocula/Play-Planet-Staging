@@ -20,6 +20,8 @@ local REMAP = {
 	["onFreefall"] = "onFreeFall",
 }
 
+--#TODO: remove freefall state (disguise as jumping state)
+
 -- Class
 
 local StateTrackerClass = {}
@@ -80,24 +82,27 @@ function StateTrackerClass:Update(gravityUp, isGrounded, isInputMoving)
 
 	if not isGrounded then
 		if gVelocity > 0 then
-			if self.Jumped then
+			if self.Jumped and not self._isJumping then
 				newState = Enum.HumanoidStateType.Jumping
-			else
-				newState = Enum.HumanoidStateType.Freefall
+
+				self._isJumping = true 
+			else 
+				--newState = Enum.HumanoidStateType.Freefall
 			end
 		else
 			if self.Jumped then
 				self.Jumped = false
 			end
-			newState = Enum.HumanoidStateType.Freefall
+			--newState = Enum.HumanoidStateType.Freefall
 		end
 	else
 		if self.Jumped and os.clock() - self.JumpTick > 0.1 then
 			self.Jumped = false
+			self._isJumping = false 
 		end
 		newSpeed = (cVelocity - gVelocity*gravityUp).Magnitude
 		newState = Enum.HumanoidStateType.Running
-	end
+	end--]]
 
 	newSpeed = isInputMoving and newSpeed or 0
 
@@ -109,8 +114,13 @@ function StateTrackerClass:Update(gravityUp, isGrounded, isInputMoving)
 end
 
 function StateTrackerClass:RequestJump()
-	self.Jumped = true
-	self.JumpTick = os.clock()
+	if not self.Jumped then 
+		self.Jumped = true
+		self.JumpTick = os.clock()
+		return true
+	end 
+
+	return false
 end
 
 function StateTrackerClass:Destroy()

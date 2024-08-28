@@ -50,9 +50,22 @@ function Player.new(_player, _profile)
 
 	local RoundService = Knit.GetService("RoundService")
 
+	local Controls = {
+		JumpsLeft = 4, 
+		RollsLeft = 1, 
+		DashesLeft = 1,
+	}
+
+	local Movement = {
+		Friction = 1, -- 100% friction = grippy player movement, 0% = slidy
+		JumpPower = 50,
+	}
+
 	local self = setmetatable({
 		-- Player 
 		Player = _player,
+		Controls = {},
+		Movement = {}, 
 
 		-- Lobby 
 		Lobby = false,
@@ -83,6 +96,7 @@ function Player.new(_player, _profile)
 		-- Dummy Humanoid for Caching Values
 		Humanoid = {
 			WalkSpeed = 24, 
+			JumpPower = 60, 
 		},
 
 		-- Signals
@@ -95,6 +109,24 @@ function Player.new(_player, _profile)
 		_maid = Maid.new(),
 	}, Player)
 
+	for name, value in Controls do 
+		_player:SetAttribute(name, value)
+		_player:SetAttribute("Max"..name, value) 
+
+		_player:GetAttributeChangedSignal(name):Connect(function()
+			self.Controls[name] = _player:GetAttribute(name) 
+		end)
+	end 
+
+	for name, value in Movement do 
+		_player:SetAttribute(name, value)
+		_player:SetAttribute("Max"..name, value) 
+
+		_player:GetAttributeChangedSignal(name):Connect(function()
+			self.Movement[name] = _player:GetAttribute(name) 
+		end)
+	end 
+
 	-- Reconcile player profile:
 	for _saveIndex, _saveValue in pairs(_profile.Data) do
 		self[_saveIndex] = _saveValue
@@ -103,7 +135,6 @@ function Player.new(_player, _profile)
 	self.PropertyChangedSignal:Connect(function(property, value)
 		-- Handle property changes.
 		if property == "Lobby" then
-			local RoundService = Knit.GetService("RoundService")
 			RoundService.Client.PlayerLobbyStatusChanged:Fire(_player, value)
 		end
 	end)
@@ -112,7 +143,6 @@ function Player.new(_player, _profile)
 		-- Find any existing sessions or instances.
 		if self._sessionId then
 			-- get GameRound and make sure to call an Exit on that
-			local GameService
 		end
 
 		if self.Lobby then
@@ -180,11 +210,31 @@ function Player:SetField(Field)
 end
 
 function Player:GetPosition()
+	-- if we have a collider then 
+	local GravityService = Knit.GetService("GravityService") 
+	local Collider = GravityService.Colliders[self.Player] 
+
+	if Collider then 
+		return Collider.Sphere.Position
+	end 
+
 	local hrp = self:GetHumanoidRootPart() 
+
 	if hrp then 
 		return hrp.Position 
 	end 
 end
+
+function Player:GetColliderRootPart()
+	local GravityService = Knit.GetService("GravityService") 
+	local Collider = GravityService.Colliders[self.Player] 
+
+	if Collider then 
+		return Collider.Sphere 
+	end 
+
+	return false 
+end 
 
 function Player:GetHumanoidRootPart()
 	local character = self.Player.Character 
@@ -228,10 +278,9 @@ end
 
 function Player:isDead()
 	local char = self.Player.Character
-	if char then 
-		local hum = char:FindFirstChild("Humanoid") 
-		return hum.Health == 0 or self._isDead 
-	end 
+	local hum = char and char:FindFirstChild("Humanoid") 
+	
+	return (hum and hum.Health == 0) or self._isDead 
 end 
 
 function Player:Spawn()

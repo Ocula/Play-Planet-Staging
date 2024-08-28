@@ -6,14 +6,15 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Shapecast = {}
 Shapecast.__index = Shapecast
 
-function Shapecast.cast(type: string, pos: any?, size: Vector3, direction: Vector3) 
+function Shapecast.cast(typeOf: string, pos: any?, size: Vector3, direction: Vector3, filter: { any }) 
     local overlapCheck = require(Knit.Library.OverlapCheck)
     local raycastParams = RaycastParams.new() 
+    raycastParams.FilterType = Enum.RaycastFilterType.Exclude 
+    raycastParams:AddToFilter(filter) 
 
-    if type == "Block" then 
+    if typeOf == "Block" then 
         return workspace:Blockcast(pos, size, direction, raycastParams) 
-    elseif type == "Sphere" then
-        assert(type(pos) == "Vector3", "Position given to Shapecast is not a Vector3")
+    elseif typeOf == "Sphere" then
         return workspace:Spherecast(pos, overlapCheck.getRadiusFromSize(size), direction, raycastParams)
     end 
 end

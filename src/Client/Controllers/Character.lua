@@ -11,7 +11,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local EventClass = require(Knit.Modules.charEvent)
 
 local character = Knit.CreateController({
-	Name = "character",
+	Name = "Character",
 	Objects = {},
 
 	Events = {},
@@ -41,6 +41,30 @@ function character.InitCharacter()
 	character.Character = character.Player.Character
 	character.Humanoid = character.Character:WaitForChild("Humanoid")
 	character.HRP = character.Character:WaitForChild("HumanoidRootPart")
+
+	-- Aesthetics forces (for player object)
+	local Character = character.Character
+	
+	for _, obj in Character:GetDescendants() do
+		if Character:WaitForChild("Collider") then 
+			if not obj:IsDescendantOf(Character.Collider) then 
+				pcall(function()
+					obj.CollisionGroup = "Characters"
+
+					obj.CanCollide = false 
+					obj.Massless = true 
+
+					warn("CanCollide:", obj)
+				end) 
+			end
+		end 
+	end
+
+	Character.DescendantAdded:Connect(function(newObject)
+		pcall(function()
+			newObject.CanCollide = false 
+		end)
+	end)
 
 	--warn("Indexed new character:", character.Character)
 end

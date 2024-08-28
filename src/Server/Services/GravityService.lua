@@ -42,22 +42,24 @@ local GravityService = Knit.CreateService({
         ReconcileField = Knit.CreateSignal() 
     },
 
+    Colliders = {},
     Fields = {},
     _nodes = {}, 
 })
+
+local CUSTOM_PHYSICAL = PhysicalProperties.new(0.3, 1, 0, 1, 100)
+
 -- Private Methods
 
 -- Client Methods
-function GravityService.Client:RequestUpVector(player, forceFieldId: string)
+function GravityService.Client:RequestUpVector(player, forceFieldId: string, position: Vector3?)
     local PlayerService = Knit.GetService("PlayerService") 
     local playerCharacter = player.Character 
 
     if playerCharacter then 
-        local hrp = playerCharacter:FindFirstChild("HumanoidRootPart")
-
         local playerObject = PlayerService:GetPlayer(player)
 
-        if hrp and playerObject then 
+        if playerObject then 
             -- Check if the server sees this field. 
             local fieldId = playerObject.Field or forceFieldId 
 
@@ -67,13 +69,142 @@ function GravityService.Client:RequestUpVector(player, forceFieldId: string)
                     return nil 
                 end--]] 
 
-                return self.Server.Fields[fieldId]:GetUpVector(hrp.Position)
+                return self.Server.Fields[fieldId]:GetUpVector(position) 
             else 
                 warn(player, "is requesting an UpVector of a Field that they aren't parented to.")
             end
         end 
     end 
 end
+
+function GravityService.Client:GetCollider(Player: Player)
+    return self.Server:GetCollider(Player) 
+end 
+
+function GravityService:GetCollider(Player: Player)
+    local Collider = self.Colliders[Player] 
+
+    if Collider and Collider.Object:IsDescendantOf(workspace) then 
+        return Collider 
+    else 
+        local function getHipHeight(character)
+            local humanoid = character:WaitForChild("Humanoid") 
+
+            if humanoid.RigType == Enum.HumanoidRigType.R15 then
+                return humanoid.HipHeight + 0.05
+            end
+
+            return 2
+        end
+
+        local HipHeight = getHipHeight(Player.Character)
+        local Model = Instance.new("Model") 
+
+        Model.Name = "Collider" 
+        Model.Parent = Player.Character 
+
+        local _conn
+        
+        _conn = Model.DescendantRemoving:Connect(function()
+            Player.Character:BreakJoints() 
+
+            if _conn then 
+                _conn:Disconnect()
+            end 
+        end)
+
+        -- Sphere 
+        local Sphere = Instance.new("Part")
+		Sphere.Name = "Sphere"
+		Sphere.Size = Vector3.new(2, 2, 2)
+		Sphere.Shape = Enum.PartType.Ball
+		Sphere.Transparency = 0
+		Sphere.CustomPhysicalProperties = CUSTOM_PHYSICAL
+        Sphere.Parent = Model 
+
+        Model.PrimaryPart = Sphere 
+
+        local FloorDetector = Instance.new("Part")
+		FloorDetector.Name = "FloorDectector"
+		FloorDetector.CanCollide = false
+        FloorDetector.Massless = true 
+		FloorDetector.Size = Vector3.new(2, 1, 1)
+		FloorDetector.Transparency = 1
+        FloorDetector.Parent = Model 
+
+        local JumpDetector = Instance.new("Part")
+		JumpDetector.Name = "JumpDectector"
+		JumpDetector.CanCollide = false
+        JumpDetector.Massless = true 
+		JumpDetector.Size = Vector3.new(2, 0.2, 1)
+		JumpDetector.Transparency = 1
+        JumpDetector.Parent = Model 
+
+        local weld = Instance.new("Weld")
+		weld.C0 = CFrame.new(0, -Sphere.Size.Y - 1, 0)
+		weld.Part0 = Sphere --.HRP
+		weld.Part1 = FloorDetector
+		weld.Parent = FloorDetector 
+        weld.Name = "Floor"
+
+		local weld = Instance.new("Weld")
+		weld.C0 = CFrame.new(0, -Sphere.Size.Y/2, 0)
+		weld.Part0 = Sphere --.HRP
+		weld.Part1 = JumpDetector
+		weld.Parent = JumpDetector--]]
+
+        local sphereAttach = Instance.new("Attachment")
+		sphereAttach.Parent = Sphere
+
+        local WalkForce = Instance.new("VectorForce")
+		WalkForce.Force = Vector3.new(0, 0, 0)
+		WalkForce.ApplyAtCenterOfMass = true
+        WalkForce.Name = "WalkForce" 
+		WalkForce.RelativeTo = Enum.ActuatorRelativeTo.World
+		WalkForce.Attachment0 = sphereAttach -- attach
+		WalkForce.Parent = Sphere
+
+        local GForce = Instance.new("VectorForce")
+		GForce.Force = Vector3.new(0, 0, 0)
+		GForce.ApplyAtCenterOfMass = true
+        GForce.Name = "GForce" 
+		GForce.RelativeTo = Enum.ActuatorRelativeTo.World
+		GForce.Attachment0 = sphereAttach -- attach
+		GForce.Parent = Sphere
+
+        local GyroAttachment0 = Instance.new("Attachment") 
+		GyroAttachment0.Parent = Sphere
+		GyroAttachment0.Name = "Align"
+		GyroAttachment0.Visible = true 
+
+        local Gyro = Instance.new("AlignOrientation")
+		Gyro.Parent = Sphere
+		Gyro.Attachment0 = GyroAttachment0
+		Gyro.Responsiveness = 200 
+		Gyro.MaxTorque = 500000000000000
+		Gyro.Mode = Enum.OrientationAlignmentMode.OneAttachment
+
+		FloorDetector.Touched:Connect(function() end)
+		JumpDetector.Touched:Connect(function() end)
+
+        Sphere:SetNetworkOwner(Player)
+
+        local newCollider = {
+            Sphere = Sphere, 
+            FloorDetector = FloorDetector, 
+            JumpDetector = JumpDetector, 
+            WalkForce = WalkForce, 
+            GForce = GForce, 
+            Gyro = Gyro, 
+            GyroAttachment0 = GyroAttachment0,
+            Object = Model
+        }
+
+        self.Colliders[Player] = newCollider 
+
+        return newCollider
+    end 
+end 
 
 function GravityService:GetFieldFromObject(object)
     for i,v in pairs(self.Fields) do
@@ -82,6 +213,8 @@ function GravityService:GetFieldFromObject(object)
         end 
     end   
 end 
+
+
 
 -- Public Methods
 function GravityService:GetNearestField(player: Player) 
